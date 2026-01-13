@@ -1,9 +1,20 @@
 spring:
   application:
     name: contabil-automation
-  
+
+  # ==========================================
+  # SELEÇÃO DO AMBIENTE (DEV ou PROD)
+  # Mude para 'dev' para usar H2 local
+  # Mude para 'prod' para usar Supabase
+  # ==========================================
   profiles:
-    active: dev
+    active: prod 
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
   
   datasource:
     url: jdbc:h2:mem:contabil_db
@@ -32,18 +43,24 @@ spring:
       on-profile: prod
   
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/contabil_db}
-    username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:postgres}
+    # SUA URL DO SUPABASE (Formatada JDBC + SSL)
+    url: jdbc:postgresql://db.qilwtajqgonurweqlznd.supabase.co:5432/postgres?sslmode=require
+    username: postgres
+    # SUA SENHA
+    password: Ga@77142153
     driver-class-name: org.postgresql.Driver
   
   jpa:
     hibernate:
-      ddl-auto: validate
-    show-sql: false
+      # 'update': O Hibernate vai criar/atualizar as tabelas baseadas nas Entidades Java.
+      # Como você já rodou SQL manual, isso vai apenas garantir que estão alinhadas.
+      # Se preferir segurança total, mude para 'validate'.
+      ddl-auto: update 
+    show-sql: true # Deixei true para você ver se está conectando
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
 
 ---
 # Configurações de integração com IA
