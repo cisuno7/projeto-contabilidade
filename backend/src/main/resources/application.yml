@@ -8,7 +8,7 @@ spring:
   # Mude para 'prod' para usar Supabase
   # ==========================================
   profiles:
-    active: prod 
+    active: dev
 
 ---
 spring:
