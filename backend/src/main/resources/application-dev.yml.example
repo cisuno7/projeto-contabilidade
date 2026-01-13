@@ -1,0 +1,35 @@
+# Exemplo de configuração para desenvolvimento
+# Copie este arquivo para application-dev.yml e ajuste conforme necessário
+
+spring:
+  datasource:
+    url: jdbc:h2:mem:contabil_db
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: 
+  
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: true
+  
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+ai:
+  service:
+    api-key: ${AI_API_KEY:}
+    base-url: ${AI_BASE_URL:https://api.openai.com/v1}
+    timeout: 30000
+    model: ${AI_MODEL:gpt-4}
+
+file:
+  storage:
+    path: ./uploads
+    max-size: 10485760

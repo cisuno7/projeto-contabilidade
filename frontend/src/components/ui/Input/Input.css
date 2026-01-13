@@ -1,0 +1,96 @@
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.input-group--full-width {
+  width: 100%;
+}
+
+.input-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+  margin-left: 0.25rem;
+}
+
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  font-size: 1rem;
+  color: #1f2937;
+  background: #ffffff;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  outline: none;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.input--with-icon {
+  padding-left: 3rem;
+}
+
+.input::placeholder {
+  color: #9ca3af;
+}
+
+.input:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.input--error {
+  border-color: #ef4444;
+}
+
+.input--error:focus {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.input:disabled {
+  background: #f9fafb;
+  color: #6b7280;
+  cursor: not-allowed;
+}
+
+.input-icon {
+  position: absolute;
+  left: 1rem;
+  color: #9ca3af;
+  pointer-events: none;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s;
+}
+
+.input:focus ~ .input-icon,
+.input-wrapper:has(.input:focus) .input-icon {
+  color: #6366f1;
+}
+
+.input--error ~ .input-icon,
+.input-wrapper:has(.input--error) .input-icon {
+  color: #ef4444;
+}
+
+.input-error {
+  font-size: 0.875rem;
+  color: #ef4444;
+  margin-left: 0.25rem;
+}
+
+.input-helper {
+  font-size: 0.875rem;
+  color: #64748b;
+  margin-left: 0.25rem;
+}
