@@ -32,7 +32,7 @@ public class ClienteRepositoryImpl implements ClienteRepository {
     
     @Override
     public Optional<Cliente> buscarPorCnpj(String cnpj) {
-        return jpaRepository.findByCnpj(cnpj)
+        return jpaRepository.findByDocumentNumber(cnpj)
                 .map(mapper::toDomain);
     }
     
@@ -55,6 +55,6 @@ public class ClienteRepositoryImpl implements ClienteRepository {
     
     @Override
     public boolean existePorCnpj(String cnpj) {
-        return jpaRepository.existsByCnpj(cnpj);
+        return jpaRepository.existsByDocumentNumber(cnpj);
     }
 }

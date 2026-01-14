@@ -13,13 +13,11 @@ public class RegraMapper {
         
         return RegraEntity.builder()
                 .id(regra.getId())
-                .nomeCampo(regra.getNomeCampo())
-                .descricao(regra.getDescricao())
-                .tipoRegra(regra.getTipoRegra())
-                .expressao(regra.getExpressao())
-                .prioridade(regra.getPrioridade())
-                .ativo(regra.getAtivo())
-                .clienteId(regra.getClienteId())
+                .clientId(regra.getClienteId())
+                .description(regra.getDescricao())
+                .ruleDefinition(regra.getTipoRegra()) // Ajustar se necessário
+                .isActive(regra.getAtivo())
+                .createdAt(regra.getDataCriacao())
                 .build();
     }
     
@@ -30,15 +28,11 @@ public class RegraMapper {
         
         return RegraPreenchimento.builder()
                 .id(entity.getId())
-                .nomeCampo(entity.getNomeCampo())
-                .descricao(entity.getDescricao())
-                .tipoRegra(entity.getTipoRegra())
-                .expressao(entity.getExpressao())
-                .prioridade(entity.getPrioridade())
-                .ativo(entity.getAtivo())
-                .clienteId(entity.getClienteId())
-                .dataCriacao(entity.getDataCriacao())
-                .dataAtualizacao(entity.getDataAtualizacao())
+                .clienteId(entity.getClientId())
+                .descricao(entity.getDescription())
+                .tipoRegra(entity.getRuleDefinition()) // Ajustar se necessário
+                .ativo(entity.getIsActive())
+                .dataCriacao(entity.getCreatedAt())
                 .build();
     }
 }

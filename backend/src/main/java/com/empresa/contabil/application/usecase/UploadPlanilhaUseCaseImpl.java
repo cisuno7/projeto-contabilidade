@@ -44,7 +44,7 @@ public class UploadPlanilhaUseCaseImpl implements UploadPlanilhaUseCase {
                     .nomeArquivo(nomeArquivo)
                     .tipoArquivo(tipoArquivo)
                     .caminhoArquivo(caminhoArquivo)
-                    .status(Planilha.StatusPlanilha.UPLOADED)
+                    .status(Planilha.StatusPlanilha.RECEBIDA)
                     .clienteId(request.getClienteId())
                     .dataUpload(LocalDateTime.now())
                     .build();

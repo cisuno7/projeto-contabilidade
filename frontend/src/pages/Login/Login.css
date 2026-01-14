@@ -136,6 +136,30 @@
   gap: 1.5rem;
 }
 
+.login-success {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem;
+  background: #dcfce7;
+  border: 1px solid #bbf7d0;
+  border-radius: 12px;
+  color: #166534;
+  font-size: 0.875rem;
+  animation: slideDown 0.4s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .login-error {
   display: flex;
   align-items: center;
@@ -317,9 +341,22 @@
 }
 
 .login-footer p {
-  font-size: 0.75rem;
+  font-size: 0.95rem;
   color: #9ca3af;
-  margin: 0;
+  margin: 0.25rem 0;
+}
+
+.register-link {
+  color: #6366f1;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 1.1rem;
+  transition: color 0.2s;
+}
+
+.register-link:hover {
+  color: #4f46e5;
+  text-decoration: underline;
 }
 
 /* Responsividade */

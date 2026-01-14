@@ -10,29 +10,29 @@ public class ClienteMapper {
         if (cliente == null) {
             return null;
         }
-        
+
         return ClienteEntity.builder()
                 .id(cliente.getId())
-                .nome(cliente.getNome())
-                .cnpj(cliente.getCnpj())
-                .email(cliente.getEmail())
-                .telefone(cliente.getTelefone())
+                .name(cliente.getName())
+                .documentNumber(cliente.getDocumentNumber())
+                .active(cliente.getActive())
+                .createdAt(cliente.getCreatedAt())
+                .updatedAt(cliente.getUpdatedAt())
                 .build();
     }
-    
+
     public Cliente toDomain(ClienteEntity entity) {
         if (entity == null) {
             return null;
         }
-        
+
         return Cliente.builder()
                 .id(entity.getId())
-                .nome(entity.getNome())
-                .cnpj(entity.getCnpj())
-                .email(entity.getEmail())
-                .telefone(entity.getTelefone())
-                .dataCriacao(entity.getDataCriacao())
-                .dataAtualizacao(entity.getDataAtualizacao())
+                .name(entity.getName())
+                .documentNumber(entity.getDocumentNumber())
+                .active(entity.getActive())
+                .createdAt(entity.getCreatedAt())
+                .updatedAt(entity.getUpdatedAt())
                 .build();
     }
 }

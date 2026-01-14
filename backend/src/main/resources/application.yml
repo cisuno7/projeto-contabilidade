@@ -8,7 +8,7 @@ spring:
   # Mude para 'prod' para usar Supabase
   # ==========================================
   profiles:
-    active: dev
+    active: prod
 
 ---
 spring:
@@ -47,7 +47,7 @@ spring:
     url: jdbc:postgresql://db.qilwtajqgonurweqlznd.supabase.co:5432/postgres?sslmode=require
     username: postgres
     # SUA SENHA
-    password: Ga@77142153
+    password: 'Ga@77142153'
     driver-class-name: org.postgresql.Driver
   
   jpa:
@@ -55,7 +55,7 @@ spring:
       # 'update': O Hibernate vai criar/atualizar as tabelas baseadas nas Entidades Java.
       # Como você já rodou SQL manual, isso vai apenas garantir que estão alinhadas.
       # Se preferir segurança total, mude para 'validate'.
-      ddl-auto: update 
+      ddl-auto: validate
     show-sql: true # Deixei true para você ver se está conectando
     properties:
       hibernate:
@@ -76,6 +76,11 @@ file:
   storage:
     path: ${FILE_STORAGE_PATH:./uploads}
     max-size: 10485760 # 10MB
+
+# Configurações JWT
+jwt:
+  secret: ${JWT_SECRET:ablTxvM7xeNRnAop7p+7drou2uu5rqcHXzzO057GU0LV1gg7zoGRWUUyrbz135fEwkIqPWMbX/X5MyQAb/sTA==}
+  expiration: ${JWT_EXPIRATION:86400000} # 24 horas em milissegundos
 
 server:
   port: 8080

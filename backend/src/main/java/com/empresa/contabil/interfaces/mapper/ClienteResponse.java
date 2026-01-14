@@ -11,14 +11,16 @@ import java.util.UUID;
 public class ClienteResponse {
 
     private UUID id;
-    private String nome;
-    private String cnpj;
+    private String name;
+    private String documentNumber;
+    private Boolean active;
 
     public static ClienteResponse fromDomain(Cliente cliente) {
         return new ClienteResponse(
             cliente.getId(),
-            cliente.getNome(),
-            cliente.getCnpj()
+            cliente.getName(),
+            cliente.getDocumentNumber(),
+            cliente.getActive()
         );
     }
 }

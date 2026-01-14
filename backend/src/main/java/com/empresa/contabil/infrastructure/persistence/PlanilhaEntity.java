@@ -1,6 +1,7 @@
 package com.empresa.contabil.infrastructure.persistence;
 
 import com.empresa.contabil.domain.model.Planilha;
+import com.empresa.contabil.domain.model.Planilha.StatusPlanilha;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,7 +12,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "planilhas")
+@Table(name = "spreadsheets")
 @Data
 @Builder
 @NoArgsConstructor
@@ -21,40 +22,46 @@ public class PlanilhaEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
-    
-    @Column(nullable = false)
-    private String nomeArquivo;
-    
-    @Column(nullable = false)
-    private String tipoArquivo;
-    
-    @Column(nullable = false)
-    private String caminhoArquivo;
-    
+
+    @Column(name = "client_id")
+    private UUID clientId;
+
+    @Column(name = "original_filename", nullable = false)
+    private String originalFilename;
+
+    @Column(name = "storage_path", nullable = false)
+    private String storagePath;
+
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Planilha.StatusPlanilha status;
-    
-    @Column(nullable = false)
-    private UUID clienteId;
-    
-    private LocalDateTime dataUpload;
-    private LocalDateTime dataProcessamento;
-    
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime dataCriacao;
-    
-    @Column(nullable = false)
-    private LocalDateTime dataAtualizacao;
+    @Column(columnDefinition = "status_processamento")
+    private StatusPlanilha status;
+
+    @Column(name = "processing_logs")
+    private String processingLogs;
+
+    @Column(name = "ai_metadata", columnDefinition = "jsonb")
+    private String aiMetadata;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
+
+    @Column(name = "processed_by")
+    private UUID processedBy;
     
     @PrePersist
     protected void onCreate() {
-        dataCriacao = LocalDateTime.now();
-        dataAtualizacao = LocalDateTime.now();
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+        if (status == null) {
+            status = StatusPlanilha.RECEBIDA;
+        }
     }
-    
+
     @PreUpdate
     protected void onUpdate() {
-        dataAtualizacao = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
     }
 }

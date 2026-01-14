@@ -30,7 +30,7 @@ public class Planilha {
     private List<Campo> campos = new ArrayList<>();
     
     public enum StatusPlanilha {
-        UPLOADED,
+        RECEBIDA,
         PROCESSANDO,
         PROCESSADA,
         ERRO,
@@ -39,6 +39,7 @@ public class Planilha {
     
     public void iniciarProcessamento() {
         this.status = StatusPlanilha.PROCESSANDO;
+        this.dataProcessamento = LocalDateTime.now();
         this.dataAtualizacao = LocalDateTime.now();
     }
     

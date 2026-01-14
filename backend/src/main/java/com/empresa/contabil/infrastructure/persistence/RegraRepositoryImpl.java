@@ -39,14 +39,14 @@ public class RegraRepositoryImpl implements RegraRepository {
     
     @Override
     public List<RegraPreenchimento> buscarPorClienteId(UUID clienteId) {
-        return jpaRepository.findByClienteId(clienteId).stream()
+        return jpaRepository.findByClientId(clienteId).stream()
                 .map(mapper::toDomain)
                 .collect(Collectors.toList());
     }
-    
+
     @Override
     public List<RegraPreenchimento> buscarAtivasPorClienteId(UUID clienteId) {
-        return jpaRepository.findByClienteIdAndAtivoTrue(clienteId).stream()
+        return jpaRepository.findByClientIdAndIsActiveTrue(clienteId).stream()
                 .map(mapper::toDomain)
                 .collect(Collectors.toList());
     }

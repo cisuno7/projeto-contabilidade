@@ -10,32 +10,46 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "clients")
+@Table(name = "users")
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ClienteEntity {
-    
+public class UserEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
+
+    @Column(nullable = false, unique = true)
+    private String username;
+
+    @Column(nullable = false, unique = true)
+    private String email;
+
+    @Column(nullable = false)
+    private String password;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private UserRole role;
+
     
-    @Column(nullable = false)
-    private String name;
-
-    @Column(name = "document_number")
-    private String documentNumber;
-
-    @Column(nullable = false)
+    @Column(nullable = false) 
     private Boolean active;
-    
-    @Column(name = "created_at", nullable = false, updatable = false)
+  
+
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at", nullable = false)
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-    
+
+    public enum UserRole {
+        ADMIN,
+        OPERATOR
+    }
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();

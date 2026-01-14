@@ -10,17 +10,13 @@ import lombok.Getter;
 @Builder
 public class ClienteRequest {
 
-    private String nome;
-    private String cnpj;
-    private String email;
-    private String telefone;
+    private String name;
+    private String documentNumber;
 
     public static ClienteRequest fromDomain(Cliente cliente) {
         return ClienteRequest.builder()
-            .nome(cliente.getNome())
-            .cnpj(cliente.getCnpj())
-            .email(cliente.getEmail())
-            .telefone(cliente.getTelefone())
+            .name(cliente.getName())
+            .documentNumber(cliente.getDocumentNumber())
             .build();
     }
 }

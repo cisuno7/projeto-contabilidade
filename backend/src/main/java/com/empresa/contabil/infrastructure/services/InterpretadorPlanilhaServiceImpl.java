@@ -24,7 +24,7 @@ public class InterpretadorPlanilhaServiceImpl implements InterpretadorPlanilhaSe
                 .id(UUID.randomUUID())
                 .nomeArquivo(nomeArquivo)
                 .tipoArquivo(tipoArquivo)
-                .status(Planilha.StatusPlanilha.UPLOADED)
+                .status(Planilha.StatusPlanilha.RECEBIDA)
                 .dataUpload(LocalDateTime.now())
                 .build();
         

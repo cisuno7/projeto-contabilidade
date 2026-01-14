@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { authService } from '../../services/auth';
 import './Login.css';
@@ -10,7 +10,16 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [mostrarSenha, setMostrarSenha] = useState(false);
+  const [mensagemSucesso, setMensagemSucesso] = useState<string | null>(null);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    const state = location.state as { message?: string; success?: boolean };
+    if (state?.message && state?.success) {
+      setMensagemSucesso(state.message);
+    }
+  }, [location.state]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,6 +70,16 @@ export default function Login() {
         </div>
 
         <form className="login-form" onSubmit={handleSubmit}>
+          {mensagemSucesso && (
+            <div className="login-success">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="10" cy="10" r="9" stroke="currentColor" strokeWidth="2"/>
+                <path d="M7 10L9 12L13 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              <span>{mensagemSucesso}</span>
+            </div>
+          )}
+
           {erro && (
             <div className="login-error">
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -163,6 +182,7 @@ export default function Login() {
         </form>
 
         <div className="login-footer">
+          <p>Não tem uma conta? <Link to="/register" className="register-link">Criar Conta</Link></p>
           <p>© 2024 Sistema Contábil. Todos os direitos reservados.</p>
         </div>
       </div>

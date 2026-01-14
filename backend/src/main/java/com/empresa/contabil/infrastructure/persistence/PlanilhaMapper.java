@@ -13,13 +13,12 @@ public class PlanilhaMapper {
         
         return PlanilhaEntity.builder()
                 .id(planilha.getId())
-                .nomeArquivo(planilha.getNomeArquivo())
-                .tipoArquivo(planilha.getTipoArquivo())
-                .caminhoArquivo(planilha.getCaminhoArquivo())
+                .clientId(planilha.getClienteId())
+                .originalFilename(planilha.getNomeArquivo())
+                .storagePath(planilha.getCaminhoArquivo())
                 .status(planilha.getStatus())
-                .clienteId(planilha.getClienteId())
-                .dataUpload(planilha.getDataUpload())
-                .dataProcessamento(planilha.getDataProcessamento())
+                .createdAt(planilha.getDataCriacao())
+                .updatedAt(planilha.getDataAtualizacao())
                 .build();
     }
     
@@ -30,15 +29,12 @@ public class PlanilhaMapper {
         
         return Planilha.builder()
                 .id(entity.getId())
-                .nomeArquivo(entity.getNomeArquivo())
-                .tipoArquivo(entity.getTipoArquivo())
-                .caminhoArquivo(entity.getCaminhoArquivo())
+                .clienteId(entity.getClientId())
+                .nomeArquivo(entity.getOriginalFilename())
+                .caminhoArquivo(entity.getStoragePath())
                 .status(entity.getStatus())
-                .clienteId(entity.getClienteId())
-                .dataUpload(entity.getDataUpload())
-                .dataProcessamento(entity.getDataProcessamento())
-                .dataCriacao(entity.getDataCriacao())
-                .dataAtualizacao(entity.getDataAtualizacao())
+                .dataCriacao(entity.getCreatedAt())
+                .dataAtualizacao(entity.getUpdatedAt())
                 .build();
     }
 }

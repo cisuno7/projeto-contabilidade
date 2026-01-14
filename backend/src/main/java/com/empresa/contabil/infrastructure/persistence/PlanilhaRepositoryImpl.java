@@ -39,7 +39,7 @@ public class PlanilhaRepositoryImpl implements PlanilhaRepository {
     
     @Override
     public List<Planilha> buscarPorClienteId(UUID clienteId) {
-        return jpaRepository.findByClienteId(clienteId).stream()
+        return jpaRepository.findByClientId(clienteId).stream()
                 .map(mapper::toDomain)
                 .collect(Collectors.toList());
     }

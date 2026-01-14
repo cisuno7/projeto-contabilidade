@@ -9,7 +9,7 @@ import java.util.UUID;
 
 @Repository
 public interface PlanilhaJpaRepository extends JpaRepository<PlanilhaEntity, UUID> {
-    List<PlanilhaEntity> findByClienteId(UUID clienteId);
+    List<PlanilhaEntity> findByClientId(UUID clientId);
     List<PlanilhaEntity> findByStatus(Planilha.StatusPlanilha status);
 }
 

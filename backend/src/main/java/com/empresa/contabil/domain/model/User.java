@@ -12,16 +12,24 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Cliente {
+public class User {
     private UUID id;
-    private String name;
-    private String documentNumber;
+    private String username;
+    private String email;
+    private String password; // Será hashada
+    private UserRole role;
     private Boolean active;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public void atualizar(String name) {
-        this.name = name;
+    public enum UserRole {
+        ADMIN,
+        OPERATOR
+    }
+
+    public void atualizar(String username, String email) {
+        this.username = username;
+        this.email = email;
         this.updatedAt = LocalDateTime.now();
     }
 

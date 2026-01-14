@@ -8,6 +8,6 @@ import java.util.UUID;
 
 @Repository
 public interface RegraJpaRepository extends JpaRepository<RegraEntity, UUID> {
-    List<RegraEntity> findByClienteId(UUID clienteId);
-    List<RegraEntity> findByClienteIdAndAtivoTrue(UUID clienteId);
+    List<RegraEntity> findByClientId(UUID clientId);
+    List<RegraEntity> findByClientIdAndIsActiveTrue(UUID clientId);
 }

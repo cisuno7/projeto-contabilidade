@@ -12,9 +12,23 @@ export interface LoginRequest {
   senha: string;
 }
 
+export interface RegisterRequest {
+  username: string; // Backend espera "username"
+  email: string;
+  password: string; // Backend espera "password"
+  cnpj?: string;
+  telefone?: string;
+}
+
 export interface LoginResponse {
+  userId: string;
+  username: string;
+  email: string;
+  role: string;
   token: string;
-  usuario: {
+  tokenType: string;
+  // Mantém compatibilidade com código existente
+  usuario?: {
     id: string;
     email: string;
     nome: string;
@@ -22,20 +36,34 @@ export interface LoginResponse {
 }
 
 export const authService = {
+  register: async (userData: RegisterRequest): Promise<void> => {
+    try {
+      await api.post('/auth/register', userData);
+    } catch (error) {
+      throw error;
+    }
+  },
+
   login: async (email: string, senha: string): Promise<LoginResponse> => {
     try {
       const response = await api.post<LoginResponse>('/auth/login', {
-        email,
-        senha,
+        usernameOrEmail: email, // Backend espera "usernameOrEmail"
+        password: senha, // Backend espera "password"
       });
 
       // Armazenar token no localStorage
       if (response.data.token) {
         localStorage.setItem('token', response.data.token);
-        localStorage.setItem('usuario', JSON.stringify(response.data.usuario));
-        
+        // Compatibilidade com código existente
+        const usuarioCompatibilidade = {
+          id: response.data.userId,
+          email: response.data.email,
+          nome: response.data.username
+        };
+        localStorage.setItem('usuario', JSON.stringify(usuarioCompatibilidade));
+
         // Configurar token para próximas requisições
-        api.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
+        api.defaults.headers.common['Authorization'] = `${response.data.tokenType || 'Bearer'} ${response.data.token}`;
       }
 
       return response.data;

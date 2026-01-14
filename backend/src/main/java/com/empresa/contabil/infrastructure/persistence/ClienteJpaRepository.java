@@ -8,6 +8,6 @@ import java.util.UUID;
 
 @Repository
 public interface ClienteJpaRepository extends JpaRepository<ClienteEntity, UUID> {
-    Optional<ClienteEntity> findByCnpj(String cnpj);
-    boolean existsByCnpj(String cnpj);
+    Optional<ClienteEntity> findByDocumentNumber(String documentNumber);
+    boolean existsByDocumentNumber(String documentNumber);
 }

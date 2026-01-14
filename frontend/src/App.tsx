@@ -11,6 +11,7 @@ const Dashboard = lazy(() => import('./pages/Dashboard/Dashboard'));
 const Upload = lazy(() => import('./pages/Upload/Upload'));
 const Historico = lazy(() => import('./pages/Historico/Historico'));
 const Login = lazy(() => import('./pages/Login/Login'));
+const Register = lazy(() => import('./pages/Register/Register'));
 
 function ProtectedRoute({ children }: { children: React.ReactElement }) {
   const isAuthenticated = authService.isAuthenticated();
@@ -41,6 +42,7 @@ function App() {
           }>
           <Routes>
               <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
               <Route
                 path="/"
                 element={
