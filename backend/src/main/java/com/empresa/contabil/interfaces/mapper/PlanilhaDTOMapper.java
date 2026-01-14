@@ -20,6 +20,13 @@ public class PlanilhaDTOMapper {
                 .clienteId(planilha.getClienteId())
                 .dataUpload(planilha.getDataUpload())
                 .dataProcessamento(planilha.getDataProcessamento())
+
+                //
+                //Campos derivados do domínio (INTENÇÃO DE UI)
+                .podeBaixar(planilha.getStatus().equals(Planilha.StatusPlanilha.PROCESSADA))
+                .finalizada(planilha.getStatus().equals(Planilha.StatusPlanilha.CONCLUIDA))
+                .emProcessamento(planilha.getStatus().equals(Planilha.StatusPlanilha.PROCESSANDO))
+                
                 .build();
     }
 }

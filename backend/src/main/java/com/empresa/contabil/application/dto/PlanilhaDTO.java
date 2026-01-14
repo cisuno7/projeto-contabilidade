@@ -21,4 +21,9 @@ public class PlanilhaDTO {
     private UUID clienteId;
     private LocalDateTime dataUpload;
     private LocalDateTime dataProcessamento;
+
+    //Campos derivados do domínio (INTENÇÃO DE UI)
+    private boolean podeBaixar;
+    private boolean finalizada;
+    private boolean emProcessamento;
 }
