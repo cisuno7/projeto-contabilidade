@@ -1,8 +1,9 @@
-import { BrowserRouter as Router, Routes, Route, Link, useLocation, Navigate, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 import { authService } from './services/auth';
 import { LoadingSpinner } from './components/ui/LoadingSpinner/LoadingSpinner';
 import { ErrorBoundary } from './components/ErrorBoundary/ErrorBoundary';
+import Navbar from './components/layout/Navbar/Navbar';
 import './App.css';
 
 // Lazy loading das páginas
@@ -10,55 +11,6 @@ const Dashboard = lazy(() => import('./pages/Dashboard/Dashboard'));
 const Upload = lazy(() => import('./pages/Upload/Upload'));
 const Historico = lazy(() => import('./pages/Historico/Historico'));
 const Login = lazy(() => import('./pages/Login/Login'));
-
-function Navigation() {
-  const location = useLocation();
-  const navigate = useNavigate();
-
-  const handleLogout = () => {
-    authService.logout();
-    navigate('/login', { replace: true });
-  };
-
-  return (
-    <nav className="navigation">
-      <div className="nav-container">
-        <h2 className="nav-title">Sistema Contábil</h2>
-        <ul className="nav-links">
-          <li>
-            <Link
-              to="/"
-              className={location.pathname === '/' ? 'active' : ''}
-            >
-              Dashboard
-            </Link>
-          </li>
-          <li>
-            <Link
-              to="/upload"
-              className={location.pathname === '/upload' ? 'active' : ''}
-            >
-              Upload
-            </Link>
-          </li>
-          <li>
-            <Link
-              to="/historico"
-              className={location.pathname === '/historico' ? 'active' : ''}
-            >
-              Histórico
-            </Link>
-          </li>
-          <li>
-            <button onClick={handleLogout} className="logout-button">
-              Sair
-            </button>
-          </li>
-        </ul>
-      </div>
-    </nav>
-  );
-}
 
 function ProtectedRoute({ children }: { children: React.ReactElement }) {
   const isAuthenticated = authService.isAuthenticated();
@@ -69,7 +21,7 @@ function ProtectedRoute({ children }: { children: React.ReactElement }) {
 
   return (
     <>
-      <Navigation />
+      <Navbar />
       <main className="main-content">
         {children}
       </main>
