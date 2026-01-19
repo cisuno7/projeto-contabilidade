@@ -67,10 +67,10 @@
         <!-- ========================================== -->
         
         <!-- Spring Security: Responsável pelo filtro de segurança -->
-        <dependency>
+        <!--<dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
-        </dependency>
+        </dependency>-->
 
         <!-- JJWT (Java JWT): Biblioteca para criar e ler tokens facilmente -->
         <dependency>

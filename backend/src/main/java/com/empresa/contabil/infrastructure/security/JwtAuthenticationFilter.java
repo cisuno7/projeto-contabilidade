@@ -1,3 +1,4 @@
+/*
 package com.empresa.contabil.infrastructure.security;
 
 import com.empresa.contabil.domain.repository.UserRepository;
@@ -67,3 +68,4 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 }
+    */

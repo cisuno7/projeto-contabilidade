@@ -1,3 +1,4 @@
+/* 
 package com.empresa.contabil.infrastructure.security;
 
 import com.empresa.contabil.domain.service.PasswordEncoderService;
@@ -25,3 +26,4 @@ public class PasswordEncoderServiceImpl implements PasswordEncoderService {
         return bCryptPasswordEncoder.matches(rawPassword, encodedPassword);
     }
 }
+    */
