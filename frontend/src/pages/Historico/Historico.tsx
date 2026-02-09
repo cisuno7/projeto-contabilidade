@@ -5,7 +5,6 @@ import { StatusBadge } from '../../components/ui/StatusBadge/StatusBadge';
 import { EmptyState } from '../../components/ui/EmptyState/EmptyState';
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner/LoadingSpinner';
 import { Button } from '../../components/ui/Button/Button';
-import type { StatusPlanilha } from '../../types';
 import './Historico.css';
 
 export default function Historico() {
@@ -135,7 +134,7 @@ export default function Historico() {
                   <td>
                     <Button
                       onClick={() => handleBaixar(planilha.id, planilha.nomeArquivo)}
-                      disabled={planilha.status !== StatusPlanilha.CONCLUIDA || downloadingId === planilha.id}
+                      disabled={!planilha.podeBaixar || downloadingId === planilha.id}
                       isLoading={downloadingId === planilha.id}
                       size="small"
                       aria-label={`Baixar ${planilha.nomeArquivo}`}

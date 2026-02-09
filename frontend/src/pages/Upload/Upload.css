@@ -138,6 +138,36 @@
   flex-shrink: 0;
 }
 
+.checkbox-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.checkbox-row input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  accent-color: #6366f1;
+  cursor: pointer;
+}
+
+.checkbox-label {
+  font-size: 0.9375rem;
+  color: #334155;
+  cursor: pointer;
+  flex: 1;
+}
+
+.input-group + .input-group {
+  margin-top: 0;
+}
+
+.upload-download {
+  margin-top: 0.5rem;
+}
+
 /* Responsividade */
 @media (max-width: 768px) {
   .upload-container {

@@ -1,6 +1,7 @@
 package com.empresa.contabil.application.usecase;
 
 import com.empresa.contabil.application.dto.PlanilhaDTO;
+import com.empresa.contabil.application.dto.ProcessarPlanilhaRequest;
 import com.empresa.contabil.application.dto.UploadPlanilhaRequest;
 import com.empresa.contabil.domain.model.Planilha;
 import com.empresa.contabil.domain.repository.PlanilhaRepository;
@@ -23,6 +24,7 @@ public class UploadPlanilhaUseCaseImpl implements UploadPlanilhaUseCase {
     private final FileStorageService fileStorageService;
     private final PlanilhaRepository planilhaRepository;
     private final PlanilhaDTOMapper planilhaDTOMapper;
+    private final ProcessarPlanilhaUseCase processarPlanilhaUseCase;
     
     @Override
     public PlanilhaDTO executar(UploadPlanilhaRequest request, MultipartFile arquivo) {
@@ -52,7 +54,24 @@ public class UploadPlanilhaUseCaseImpl implements UploadPlanilhaUseCase {
             // Salvar no banco de dados
             Planilha planilhaSalva = planilhaRepository.salvar(planilha);
             
-            log.info("Planilha salva com sucesso: {}", planilhaSalva.getId());
+            // Se corrigirComIA estiver ativado, disparar processamento imediato
+            if (Boolean.TRUE.equals(request.getCorrigirComIA())) {
+                log.info("CorrigirComIA ativado - disparando processamento para planilha {}", planilhaSalva.getId());
+                try {
+                    PlanilhaDTO processada = processarPlanilhaUseCase.executar(
+                            ProcessarPlanilhaRequest.builder()
+                                    .planilhaId(planilhaSalva.getId())
+                                    .usarIA(true)
+                                    .build()
+                    );
+                    return processada;
+                } catch (Exception e) {
+                    log.error("Erro ao processar planilha após upload", e);
+                    return planilhaDTOMapper.toDTO(planilhaSalva);
+                }
+            }
+            
+            log.info("Planilha salva com sucesso: {} (corrigirComIA={})", planilhaSalva.getId(), request.getCorrigirComIA());
             return planilhaDTOMapper.toDTO(planilhaSalva);
             
         } catch (Exception e) {

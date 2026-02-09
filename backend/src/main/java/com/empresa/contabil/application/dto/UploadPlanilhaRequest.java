@@ -14,4 +14,9 @@ import java.util.UUID;
 public class UploadPlanilhaRequest {
     private UUID clienteId;
     private String nomeArquivo;
+    /**
+     * Indica se a planilha deverá ser processada com o pipeline de correção por IA
+     * (focado em NCM/CEST para SP + Simples Nacional).
+     */
+    private Boolean corrigirComIA;
 }

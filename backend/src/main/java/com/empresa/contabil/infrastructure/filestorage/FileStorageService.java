@@ -7,6 +7,7 @@ import java.nio.file.Path;
 
 public interface FileStorageService {
     String salvar(MultipartFile arquivo, String nomeArquivo);
+    String salvarBytes(byte[] bytes, String nomeArquivo);
     InputStream ler(String caminhoArquivo);
     void deletar(String caminhoArquivo);
     Path obterCaminhoCompleto(String caminhoArquivo);

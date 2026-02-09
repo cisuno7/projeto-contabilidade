@@ -5,3 +5,8 @@ uploads/
 *.log
 *.mv.db
 *.trace.db
+
+# Arquivos de configuração local com credenciais
+.env
+.env.local
+application-local.yml

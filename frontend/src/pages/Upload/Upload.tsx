@@ -8,9 +8,33 @@ import './Upload.css';
 export default function Upload() {
   const [arquivo, setArquivo] = useState<File | null>(null);
   const [clienteId, setClienteId] = useState('');
+  const [corrigirComIA, setCorrigirComIA] = useState(true);
   const [loading, setLoading] = useState(false);
   const [mensagem, setMensagem] = useState<{ texto: string; tipo: 'sucesso' | 'erro' } | null>(null);
+  const [planilhaProcessada, setPlanilhaProcessada] = useState<Planilha | null>(null);
+  const [downloading, setDownloading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleBaixar = useCallback(async () => {
+    if (!planilhaProcessada) return;
+    try {
+      setDownloading(true);
+      const blob = await planilhaService.baixar(planilhaProcessada.id);
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `corrigido_${planilhaProcessada.nomeArquivo || 'planilha.xlsx'}`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (err) {
+      console.error('Erro ao baixar planilha:', err);
+      setMensagem({ texto: 'Erro ao baixar a planilha. Tente novamente.', tipo: 'erro' });
+    } finally {
+      setDownloading(false);
+    }
+  }, [planilhaProcessada]);
 
   const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -31,10 +55,18 @@ export default function Upload() {
     setMensagem(null);
 
     try {
-      const planilha: Planilha = await planilhaService.upload(arquivo, clienteId.trim());
-      setMensagem({ texto: `Planilha "${planilha.nomeArquivo}" enviada com sucesso!`, tipo: 'sucesso' });
+      const planilha: Planilha = await planilhaService.upload(arquivo, clienteId.trim(), undefined, corrigirComIA);
+      const processada = corrigirComIA && planilha.podeBaixar;
+      setMensagem({ 
+        texto: processada 
+          ? `Planilha "${planilha.nomeArquivo}" processada com sucesso! NCM e CEST corrigidos.`
+          : `Planilha "${planilha.nomeArquivo}" enviada com sucesso! Correção com IA: ${corrigirComIA ? 'ativada' : 'desativada'}.`, 
+        tipo: 'sucesso' 
+      });
+      setPlanilhaProcessada(processada ? planilha : null);
       setArquivo(null);
       setClienteId('');
+      setCorrigirComIA(true);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
@@ -44,7 +76,7 @@ export default function Upload() {
     } finally {
       setLoading(false);
     }
-  }, [arquivo, clienteId]);
+  }, [arquivo, clienteId, corrigirComIA]);
 
   return (
     <div className="upload-container">
@@ -109,6 +141,40 @@ export default function Upload() {
           </div>
           <span className="input-helper">Formatos aceitos: .xlsx, .xls, .csv</span>
         </div>
+
+        <div className="input-group">
+          <label className="input-label">Correção automática com IA</label>
+          <div className="checkbox-row">
+            <input
+              id="corrigirComIA"
+              type="checkbox"
+              checked={corrigirComIA}
+              onChange={(e) => setCorrigirComIA(e.target.checked)}
+              disabled={loading}
+            />
+            <label htmlFor="corrigirComIA" className="checkbox-label">
+              Corrigir planilha com IA (focado em NCM e CEST para São Paulo / Simples Nacional)
+            </label>
+          </div>
+          <span className="input-helper">
+            Quando ativado, o sistema tenta validar e ajustar automaticamente os códigos NCM e CEST da planilha.
+          </span>
+        </div>
+
+        {planilhaProcessada?.podeBaixar && (
+          <div className="upload-download">
+            <Button
+              type="button"
+              onClick={handleBaixar}
+              disabled={downloading}
+              isLoading={downloading}
+              fullWidth
+              size="large"
+            >
+              Baixar planilha corrigida
+            </Button>
+          </div>
+        )}
 
         {mensagem && (
           <div className={`upload-mensagem ${mensagem.tipo === 'sucesso' ? 'upload-mensagem--sucesso' : 'upload-mensagem--erro'}`} role="alert">

@@ -9,13 +9,19 @@ const api = axios.create({
 });
 
 export const planilhaService = {
-  upload: async (arquivo: File, clienteId: string, nomeArquivo?: string): Promise<Planilha> => {
+  upload: async (
+    arquivo: File,
+    clienteId: string,
+    nomeArquivo?: string,
+    corrigirComIA: boolean = true,
+  ): Promise<Planilha> => {
     const formData = new FormData();
     formData.append('arquivo', arquivo);
     formData.append('clienteId', clienteId);
     if (nomeArquivo) {
       formData.append('nomeArquivo', nomeArquivo);
     }
+    formData.append('corrigirComIA', String(corrigirComIA));
 
     const response = await api.post<Planilha>('/planilhas/upload', formData, {
       headers: {

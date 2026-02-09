@@ -17,6 +17,8 @@ public class PlanilhaMapper {
                 .originalFilename(planilha.getNomeArquivo())
                 .storagePath(planilha.getCaminhoArquivo())
                 .status(planilha.getStatus())
+                .processingLogs(planilha.getProcessingLogs())
+                .aiMetadata(planilha.getAiMetadata())
                 .createdAt(planilha.getDataCriacao())
                 .updatedAt(planilha.getDataAtualizacao())
                 .build();
@@ -35,6 +37,8 @@ public class PlanilhaMapper {
                 .status(entity.getStatus())
                 .dataCriacao(entity.getCreatedAt())
                 .dataAtualizacao(entity.getUpdatedAt())
+                .processingLogs(entity.getProcessingLogs())
+                .aiMetadata(entity.getAiMetadata())
                 .build();
     }
 }

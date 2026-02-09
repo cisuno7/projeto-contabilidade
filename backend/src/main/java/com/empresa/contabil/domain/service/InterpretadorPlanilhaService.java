@@ -9,4 +9,5 @@ public interface InterpretadorPlanilhaService {
     Planilha lerPlanilha(InputStream arquivo, String nomeArquivo, String tipoArquivo);
     Map<String, Object> extrairDadosEstruturados(Planilha planilha);
     void validarEstrutura(Planilha planilha);
+    byte[] gerarExcel(Planilha planilha);
 }

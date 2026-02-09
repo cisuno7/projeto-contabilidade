@@ -1,0 +1,536 @@
+﻿============================================================
+LEITURA DOS DOCUMENTOS - cursor/context
+============================================================
+
+## 1. NCM.xlsx (Planilha Padr├úo Nacional)
+----------------------------------------
+
+Aba: Tabela NCM
+  1: ["Tabela NCM","","","","","",""]
+  2: ["(Vigente em 27/01/2026)","","","","","",""]
+  3: ["├Ültima Atualiza├º├úo: Resolu├º├úo Gecex n┬║ 812/2025","","","","","",""]
+  4: ["","","","","","",""]
+  5: ["C├│digo","Descri├º├úo","Data In├¡cio","Data Fim","Ato Legal In├¡cio","N├║mero","Ano"]
+  6: ["01","Animais vivos.","01/04/2022","31/12/9999","Res Camex","272","2021"]
+  7: ["01.01","Cavalos, asininos e muares, vivos.","01/04/2022","31/12/9999","Res Camex","272","2021"]
+  8: ["0101.2","- Cavalos:","01/04/2022","31/12/9999","Res Camex","272","2021"]
+  9: ["0101.21.00","-- Reprodutores de ra├ºa pura","01/04/2022","31/12/9999","Res Camex","272","2021"]
+  10: ["0101.29.00","-- Outros","01/04/2022","31/12/9999","Res Camex","272","2021"]
+  11: ["0101.30.00","- Asininos","01/04/2022","31/12/9999","Res Camex","272","2021"]
+  12: ["0101.90.00","- Outros","01/04/2022","31/12/9999","Res Camex","272","2021"]
+  13: ["01.02","Animais vivos da esp├®cie bovina.","01/04/2022","31/12/9999","Res Camex","272","2021"]
+  14: ["0102.2","- Bovinos dom├®sticos:","01/04/2022","31/12/9999","Res Camex","272","2021"]
+  15: ["0102.21","-- Reprodutores de ra├ºa pura","01/04/2022","31/12/9999","Res Camex","272","2021"]
+  16: ["0102.21.10","Prenhes ou com cria ao p├®","01/04/2022","31/12/9999","Res Camex","272","2021"]
+  17: ["0102.21.90","Outros","01/04/2022","31/12/9999","Res Camex","272","2021"]
+  18: ["0102.29","-- Outros","01/04/2022","31/12/9999","Res Camex","272","2021"]
+  19: ["0102.29.1","Para reprodu├º├úo","01/04/2022","31/12/9999","Res Camex","272","2021"]
+  20: ["0102.29.11","Prenhes ou com cria ao p├®","01/04/2022","31/12/9999","Res Camex","272","2021"]
+  21: ["0102.29.19","Outros","01/04/2022","31/12/9999","Res Camex","272","2021"]
+  22: ["0102.29.90","Outros","01/04/2022","31/12/9999","Res Camex","272","2021"]
+  23: ["0102.3","- B├║falos:","01/04/2022","31/12/9999","Res Camex","272","2021"]
+  24: ["0102.31","-- Reprodutores de ra├ºa pura","01/04/2022","31/12/9999","Res Camex","272","2021"]
+  25: ["0102.31.10","Prenhes ou com cria ao p├®","01/04/2022","31/12/9999","Res Camex","272","2021"]
+  26: ["0102.31.90","Outros","01/04/2022","31/12/9999","Res Camex","272","2021"]
+  27: ["0102.39","-- Outros","01/04/2022","31/12/9999","Res Camex","272","2021"]
+  28: ["0102.39.1","Para reprodu├º├úo","01/04/2022","31/12/9999","Res Camex","272","2021"]
+  29: ["0102.39.11","Prenhes ou com cria ao p├®","01/04/2022","31/12/9999","Res Camex","272","2021"]
+  30: ["0102.39.19","Outros","01/04/2022","31/12/9999","Res Camex","272","2021"]
+  31: ["0102.39.90","Outros","01/04/2022","31/12/9999","Res Camex","272","2021"]
+  32: ["0102.90.00","- Outros","01/04/2022","31/12/9999","Res Camex","272","2021"]
+  33: ["01.03","Animais vivos da esp├®cie su├¡na.","01/04/2022","31/12/9999","Res Camex","272","2021"]
+  34: ["0103.10.00","- Reprodutores de ra├ºa pura","01/04/2022","31/12/9999","Res Camex","272","2021"]
+  35: ["0103.9","- Outros:","01/04/2022","31/12/9999","Res Camex","272","2021"]
+
+
+## 2. Planilha-Cadastro_Produto-Padaria-Brasil-MEJ Padaria modificado.xlsx
+----------------------------------------
+
+Aba: Planilha
+  1: ["CODIGO","NOME","PRE├çO DE VENDA","UNIDADE DE MEDIDA","CODIGONCM","CST","CSOSN","ALIQECF","CSTPISENTRADA","CSTPISSAIDA","CSTCOFINSENTRADA","CSTCOFINSSAIDA","PISCREDITO","COFINSCREDITO","PISDEBITO","COFINSDEBITO","CFOPEI","CFOPEE","CFOPSI","CFOPSE","NATRECEITAPISCOFINS","GRUPO","CEST"]
+  2: [1,"Leite UHT","","UN","0401.10.10",0,102,"",99,1,99,1,0,0,0,0,1102,1102,5102,5102,99,"Bebida l├íctea natural","17.016.00"]
+  3: [2,"Nescau 200g",12.25,"","1806.90.00",0,500,"","","","","","","","","",1403,1403,5405,5405,99,"Achocolatado em p├│","17.006.00"]
+  4: [3,"Toddy 370g",18,"","1806.90.00",0,500,"","","","","","","","","",1403,1403,5405,5405,99,"Achocolatado em p├│","17.006.00"]
+  5: [4,"Leite condensado Mo├ºa",9.5,"","0402.99.90",0,500,"","","","","","","","","",1403,1403,5405,5405,99,"Leite condensado ado├ºado","17.020.00"]
+  6: [5,"Ch├í leao",6,"","0903.00.10",0,102,"","","","","","","","","",1102,1102,5102,5102,99,"Ch├í (erva-mate)","17.098.00"]
+  7: [6,"Filtro de papel melita 103",8.25,"","4823.40.00",0,102,"","","","","","","","","",1102,1102,5102,5102,"","Utens├¡lio (filtro de papel)","ÔÇô"]
+  8: [7,"Maionese HellmannÔÇÖs 500g",18,"","2103.90.21",0,500,"","","","","","","","","",1403,1403,5405,5405,99,"Maionese industrializada","17.039.00"]
+  9: [8,"Vinagre de ├ílcool fortaleza",4,"","2209.00.10",0,500,"","","","","","","","","",1403,1403,5405,5405,99,"Vinagre","17.036.00"]
+  10: [9,"Ch├í erva doce",6,"","2106.90.30",0,102,"","","","","","","","","",1102,1102,5102,5102,99,"Ch├í industrializado","17.097.00"]
+  11: [10,"Ch├í hortel├ú",6,"","2106.90.30",0,102,"","","","","","","","","",1102,1102,5102,5102,99,"Ch├í industrializado","17.097.00"]
+  12: [11,"Ch├í erva cidreira",6,"","2106.90.30",0,102,"","","","","","","","","",1102,1102,5102,5102,99,"Ch├í industrializado","17.097.00"]
+  13: [12,"Gelatina incolor","","","2106.90.10",0,500,"","","","","","","","","",1403,1403,5405,5405,99,"Gelatina alimentar","17.033.00"]
+  14: [13,"Gelatina morango/abacaxi ",3.5,"","2106.90.10",0,500,"","","","","","","","","",1403,1403,5405,5405,99,"Gelatina alimentar","17.033.00"]
+  15: [14,"Fermento qu├¡mico (P├│ Royal)",7,"","2102.30.10",0,500,"","","","","","","","","",1403,1403,5405,5405,99,"Fermento qu├¡mico","17.033.00"]
+  16: [15,"Coco ralado",12.9,"","0801.19.00",0,500,"","","","","","","","","",1403,1403,5405,5405,99,"Coco seco ralado","17.016.00"]
+  17: [16,"Uva passa","","","0806.20.00",0,500,"","","","","","","","","",1403,1403,5405,5405,99,"Fruta seca (uva passa)","17.016.00"]
+  18: [17,"Vinagre colorido","","","2209.00.10",0,500,"","","","","","","","","",1403,1403,5405,5405,99,"Vinagre","17.036.00"]
+  19: [18,"├ôleo de soja",13.85,"","1507.10.00",0,500,"","","","","","","","","",1403,1403,5405,5405,99,"├ôleo vegetal comest├¡vel","17.015.00"]
+  20: [19,"Sal rosa","","","2501.00.90",0,102,"","","","","","","","","",1102,1102,5102,5102,99,"Sal alimentar","17.004.00"]
+  21: [20,"Ch├í industrializado (gen├®rico)","","","2106.90.30",0,102,"","","","","","","","","",1102,1102,5102,5102,99,"Ch├í industrializado","17.097.00"]
+  22: [21,"Caf├® torrado (em p├│)",42.5,"","0901.21.00",0,500,"","","","","","","","","",1403,1403,5405,5405,99,"Caf├® torrado e mo├¡do","17.099.00"]
+  23: [22,"A├º├║car refinado",6.1,"","1701.99.00",0,500,"","","","","","","","","",1403,1403,5405,5405,99,"A├º├║car","17.001.00"]
+  24: [23,"A├º├║car cristal","","","1701.11.00",0,500,"","","","","","","","","",1403,1403,5405,5405,99,"A├º├║car","17.001.00"]
+  25: [24,"Farinha de trigo",9,"","1101.00.10",0,102,"","","","","","","","","",1102,1102,5102,5102,99,"Farinha de trigo","17.005.00"]
+  26: [25,"Fub├í",6,"","1102.20.00",0,102,"","","","","","","","","",1102,1102,5102,5102,99,"Fub├í (milho mo├¡do)","17.005.00"]
+  27: [26,"Amido de milho",5.5,"","1108.12.00",0,500,"","","","","","","","","",1403,1403,5405,5405,99,"Amido de milho","17.005.00"]
+  28: [27,"Arroz branco",23.3,"","1006.30.21",0,500,"","","","","","","","","",1403,1403,5405,5405,99,"Arroz beneficiado","17.002.00"]
+  29: [28,"Arroz parboilizado","","","1006.30.11",0,500,"","","","","","","","","",1403,1403,5405,5405,99,"Arroz parboilizado","17.002.00"]
+  30: [29,"Macarr├úo espaguete",6,"","1902.11.00",0,500,"","","","","","","","","",1403,1403,5405,5405,99,"Massa aliment├¡cia seca","17.008.00"]
+  31: [30,"Macarr├úo parafuso",6.4,"","1902.11.00",0,500,"","","","","","","","","",1403,1403,5405,5405,99,"Massa aliment├¡cia seca","17.008.00"]
+  32: [31,"Miojo (massa instant├ónea)",4,"","1902.30.00",0,500,"","","","","","","","","",1403,1403,5405,5405,99,"Massa aliment├¡cia instant├ónea","17.008.00"]
+  33: [32,"Feij├úo carioca",10.5,"","0713.33.19",0,102,"","","","","","","","","",1102,1102,5102,5102,99,"Feij├úo","17.003.00"]
+  34: [33,"Feij├úo preto","","","0713.33.19",0,102,"","","","","","","","","",1102,1102,5102,5102,99,"Feij├úo","17.003.00"]
+  35: [34,"Lentilha","","","0713.40.00",0,102,"","","","","","","","","",1102,1102,5102,5102,99,"Lentilha","17.003.00"]
+
+
+## 3. CSOSN.docx
+----------------------------------------
+
+
+
+
+
+## 4. CEST SP.pdf
+----------------------------------------
+PORTARIA CAT 68, DE 13-12-2019
+(DOE 17-12-2019)
+Divulga a rela├º├úo de mercadorias sujeitas ao regime da substitui├º├úo tribut├íria com reten├º├úo antecipada do ICMS no Estado de S├úo
+Paulo
+Com as altera├º├Áes das Portarias 	CAT-17/20, de 27-02-2020 (DOE 28-02-2020); 	CAT-57/21, de 06-08-2021 (DOE
+07-08-2021); 	CAT-91/21, de 23-12-2021 (DOE 24-12-2021) ; 	CAT-101/21, de 29-12-2021 (DOE 30-12-2021); 	SRE-18/22, de
+29-03-2022 (DOE 30-03-2022); 	SRE-46/22, de 23-06-2022 (DOE 24-06-2022); 	SRE-69/22, de 14-09-2022 (DOE 15-09-2022);
+SRE-74/22, de 27-09-2022 (DOE 28-09-2022); 	SRE-89/22, de 01-11-2022 (DOE 02-11-2022); 	SRE-31/23, de 05-05-2023 (DOE
+06-05-2023); 	SRE-58/23, de 11-09-2023 (DOE 12-09-2023); 	SRE-04/24, de 30-01-2024 (DOE 31-01-2024); 	SRE-33/24, de
+17-05-2024 (DOE 20-05-2024); 	SRE-62/24, de 21-08-2024 (DOE 22-08-2024); 	SRE-3/25, de 20-01-2025 (DOE 21-01-2025)
+; 	SRE-64/25, de 01-10-2025 (DOE 02-10-2025).; 	SRE-85/25, de 25-11-2025 (DOE 26-10-2025).; e 	SRE-94/25, de 22-12-2025
+(DOE 23-12-2025).
+O Coordenador da Administra├º├úo Tribut├íria, tendo em vista o disposto nos artigos 289, 291, 293, 295, 299, 301, 310, 312, 313-A,
+313-C, 313-E, 313-I, 313-K, 313-O, 313-S, 313-W, 313-Y, 313-Z3, 313-Z13, 313-Z15, 313-Z17 e 313-Z19 do Regulamento do
+Imposto sobre Opera├º├Áes Relativas ├á Circula├º├úo de Mercadorias e sobre Presta├º├Áes de Servi├ºos de Transporte Interestadual e
+Intermunicipal e de Comunica├º├úo - RICMS, aprovado pelo Decreto 45.490, de 30-11-2000, e o disposto na cl├íusula sexta e no ┬º 5┬║
+da cl├íusula s├®tima do Conv├¬nio ICMS 142/18, de 14-12-2018, expede a seguinte portaria:
+Artigo 1┬░ 	- As mercadorias indicadas nos Anexos I a XXII desta portaria est├úo sujeitas ao regime jur├¡dico da substitui├º├úo tribut├íria
+com reten├º├úo antecipada do imposto no Estado de S├úo Paulo.
+Par├ígrafo ├║nico - O ÔÇ£CESTÔÇØ, constante dos anexos, trata-se do c├│digo especificador da substitui├º├úo tribut├íria, previsto no inciso IV
+da cl├íusula sexta do Conv├¬nio ICMS 142/18, de 14-12-2018.
+Artigo 2┬║ 	- Esta portaria entra em vigor em 01-01-2020, vigorando o item 24 do Anexo X at├® 31-01-2020.
+NOTA - V. COMUNICADO 	CAT-02/20 	(DOE 01-02-2020). Esclarece sobre os procedimentos a serem adotados pelos contribuintes
+relativamente aos estoques de vinho, em 31-01-2020.
+ANEXO I
+FUMO OU SEUS SUCED├éNEOS MANUFATURADOS
+(artigo 289 do RICMS)
+ITEM 	CEST 	NCM/SH 	DESCRI├ç├âO
+1 	04.001.00 	2402 	Charutos, 	cigarrilhas 	e 	cigarros, 	de 	tabaco 	ou 	dos 	seus
+suced├óneos
+2 	04.002.00 	2403.1 	Tabaco para fumar, mesmo contendo suced├óneos de tabaco em
+qualquer propor├º├úo
+ANEXO II
+CIMENTO
+(artigo 291 do RICMS)
+ITEM 	CEST 	NCM/SH 	DESCRI├ç├âO
+
+-- 1 of 46 --
+
+1 	05.001.00 	2523 	Cimento
+ANEXO III
+CERVEJA, CHOPE, REFRIGERANTE, ├üGUA E OUTRAS BEBIDAS
+(artigo 293 do RICMS)
+ITEM 	CEST 	NCM/SH 	DESCRI├ç├âO
+1 	(Item revogado pela
+Portaria 	CAT-57/21, de
+06-08-2021; DOE
+07-08-2021)
+03.001.00 	2201.10.00 	├ügua mineral, gasosa ou n├úo, ou pot├ível, naturais, em garrafa de
+vidro, retorn├ível ou n├úo, com capacidade de at├® 500 ml
+2 	(Item revogado pela
+Portaria 	CAT-57/21, de
+06-08-2021; DOE
+07-08-2021)
+03.002.00 	2201.10.00 	├ügua mineral, gasosa ou n├úo, ou pot├ível, naturais, em embalagem
+com capacidade igual ou superior a 5.000 ml; exceto as
+classificadas no CEST 03.024.00 e 03.025.00
+3 (Reda├º├úo dada ao item
+pela Portaria 	CAT-57/21,
+de 06-08-2021; DOE
+07-08-2021)
+03.003.00 	2201.10.00 	├ügua mineral, gasosa ou n├úo, ou pot├ível, naturais, em embalagem
+de vidro descart├ível
+3 	03.003.00 	2201.10.00 	├ügua mineral, gasosa ou n├úo, ou pot├ível, naturais, em embalagem
+de vidro, n├úo retorn├ível, com capacidade de at├® 300 ml
+3.1 	(Item
+acrescentado pela
+Portaria 	CAT-57/21, de
+06-08-2021; DOE
+07-08-2021)
+03.003.01 	2201.10.00 	├ügua mineral, gasosa ou n├úo, ou pot├ível, naturais, adicionadas de
+sais, em embalagem de vidro descart├ível
+4 	(Item revogado pela
+Portaria 	CAT-57/21, de
+06-08-2021; DOE
+07-08-2021)
+03.004.00 	2201.10.00 	├ügua mineral, gasosa ou n├úo, ou pot├ível, naturais, em garrafa
+pl├ística de 1.500 ml
+5 (Reda├º├úo dada ao item
+pela Portaria 	CAT-57/21,
+de 06-08-2021; DOE
+07-08-2021)
+03.005.00 	2201.10.00 	├ügua mineral, gasosa ou n├úo, ou pot├ível, naturais, em copo
+pl├ístico descart├ível
+5 	03.005.00 	2201.10.00 	├ügua mineral, gasosa ou n├úo, ou pot├ível, naturais, em copos
+pl├ísticos e embalagem pl├ística com capacidade de at├® 500 ml
+
+-- 2 of 46 --
+
+5.1 (Item
+acrescentado pela
+Portaria 	CAT-57/21, de
+06-08-2021; DOE
+07-08-2021)
+03.005.01 	2201.10.00 	├ügua mineral, gasosa ou n├úo, ou pot├ível, naturais, adicionadas de
+sais, em copo pl├ístico descart├ível
+5.2 (Item
+acrescentado pela
+Portaria 	CAT-57/21, de
+06-08-2021; DOE
+07-08-2021)
+03.005.02 	2201.10.00 	├ügua mineral, gasosa ou n├úo, ou pot├ível, naturais, em jarra
+descart├ível
+5.3 (Item
+acrescentado pela
+Portaria 	CAT-57/21, de
+06-08-2021; DOE
+07-08-2021)
+03.005.03 	2201.10.00 	├ügua mineral, gasosa ou n├úo, ou pot├ível, naturais, adicionadas de
+sais, em jarra descart├ível
+5.4 (Item
+acrescentado pela
+Portaria 	CAT-57/21, de
+06-08-2021; DOE
+07-08-2021)
+03.005.04 	2201.10.00 	├ügua mineral, gasosa ou n├úo, ou pot├ível, naturais, em demais
+embalagens descart├íveis
+5.5 (Item
+acrescentado pela
+Portaria 	CAT-57/21, de
+06-08-2021; DOE
+07-08-2021)
+03.005.05 	2201.10.00 	├ügua mineral, gasosa ou n├úo, ou pot├ível, naturais, adicionadas de
+sais, em demais embalagens descart├íveis
+6 	(Reda├º├úo dada ao item
+pela Portaria 	CAT-57/21,
+de 06-08-2021; DOE
+07-08-2021)
+03.006.00 	2201 	Outras ├íguas minerais, gasosa ou n├úo, ou pot├ível, naturais;
+exceto as classificadas no CEST 03.003.00, 03.003.01, 03.005.00,
+03.005.01 a 03.005.05, 03.024.00 e 03.025.00
+6 	03.006.00 	2201.10.00 	Outras ├íguas minerais, pot├íveis ou naturais, gasosas ou n├úo,
+inclusive gaseificadas; exceto as classificadas no CEST 03.024.00 e
+03.025.00
+7 (Reda├º├úo dada ao item
+pela Portaria 	CAT-57/21,
+de 06-08-2021; DOE
+07-08-2021)
+03.007.00 	2202.10.00 	├ügua aromatizada artificialmente, exceto os refrescos e
+refrigerantes
+7 	03.007.00 	2202.10.00 	├üguas minerais, pot├íveis ou naturais, gasosas ou n├úo, inclusive
+gaseificadas ou aromatizadas artificialmente, exceto os refrescos e
+refrigerantes
+
+-- 3 of 46 --
+
+8 (Reda├º├úo dada ao item
+pela Portaria 	CAT-57/21,
+de 06-08-2021; DOE
+07-08-2021)
+03.008.00 	2202.99.00 	Outras ├íguas minerais, gasosa ou n├úo, ou pot├ível, naturais,
+inclusive gaseificadas ou aromatizadas artificialmente, exceto os
+refrescos e refrigerantes
+8 	03.008.00 	2202.99.00 	Outras ├íguas minerais, pot├íveis ou naturais, gasosas ou n├úo,
+inclusive gaseificadas ou aromatizadas artificialmente
+9 (Reda├º├úo dada ao item
+pela Portaria CAT-57/21,
+de 06-08-2021; DOE
+07-08-2021)
+03.010.00 	2202.10.00
+2202.99.00
+Refrigerante em vidro descart├ível
+9 	03.010.00 	2202 	Refrigerantes em garrafa com capacidade igual ou superior a 600
+ml, exceto os classificados no CEST 03.011.01
+9.1 (Item
+acrescentado pela
+Portaria 	CAT-57/21, de
+06-08-2021; DOE
+07-08-2021)
+03.010.01 	2202.10.00
+2202.99.00
+Refrigerante em embalagem pet
+9.2 (Item
+acrescentado pela
+Portaria 	CAT-57/21, de
+06-08-2021; DOE
+07-08-2021)
+03.010.02 	2202.10.00
+2202.99.00
+Refrigerante em lata
+10 (Reda├º├úo dada ao
+item pela
+Portaria 	CAT-57/21, de
+06-08-2021; DOE
+07-08-2021)
+03.011.00 	2202.10.00
+2202.99.00
+Demais refrigerantes, exceto os classificados no CEST 03.010.00,
+03.010.01, 03.010.02 e 03.011.01
+10 	03.011.00 	2202 	Demais refrigerantes, exceto os classificados no CEST 03.010.00 e
+03.011.01
+11 	03.011.01 	2202 	Espumantes sem ├ílcool
+12 (Reda├º├úo dada ao
+item pela
+Portaria 	CAT-57/21, de
+06-08-2021; DOE
+07-08-2021)
+03.012.00 	2106.90.10 	Xarope ou extrato concentrado destinados ao preparo de
+refrigerante em m├íquina ÔÇ£pr├®-mixÔÇØ ou ÔÇ£post-mixÔÇØ, exceto o
+classificado no CEST 03.012.01
+12 	03.012.00 	2106.90.10 	Xarope ou extrato concentrado destinados ao preparo de
+refrigerante em m├íquina ÔÇ£pr├®-mixÔÇØ ou ÔÇ£post-mixÔÇØ
+12.1 	(Item
+acrescentado pela
+Portaria 	CAT-57/21, de
+06-08-2021; DOE
+07-08-2021)
+03.012.01 	2106.90.10 	C├ípsula de refrigerante
+13 (Reda├º├úo dada ao
+item pela
+Portaria 	CAT-57/21, de
+06-08-2021; DOE
+07-08-2021)
+03.013.00 	2106.90
+2202.99.00
+Bebidas energ├®ticas em lata
+13.1 	(Item
+acrescentado pela
+Portaria 	CAT-57/21, de
+06-08-2021; DOE
+07-08-2021)
+Bebidas energ├®ticas em embalagem PET
+
+-- 4 of 46 --
+
+13.2 	(Item
+acrescentado pela
+Portaria 	CAT-57/21, de
+06-08-2021; DOE
+07-08-2021)
+03.013.02 	2106.90
+2202.99.00
+Bebidas energ├®ticas em vidro
+13 	03.013.00 	2106.90
+2202.99.00
+Bebidas energ├®ticas em embalagem com capacidade inferior a
+600ml
+14 	(Item revogado pela
+Portaria 	CAT-57/21, de
+06-08-2021; DOE
+07-08-2021)
+03.014.00 	2106.90
+2202.99.00
+Bebidas energ├®ticas em embalagem com capacidade igual ou
+superior a 600ml
+15 (Reda├º├úo dada ao
+item pela
+Portaria 	CAT-57/21, de
+06-08-2021; DOE
+07-08-2021)
+03.015.00 	2106.90
+2202.99.00
+Bebidas hidroeletrol├¡ticas
+15 	03.015.00 	2106.90
+2202.99.00
+Bebidas hidroeletrol├¡ticas (isot├┤nicas) em embalagem com
+capacidade inferior a 600ml
+16 	(Item revogado pela
+Portaria 	CAT-57/21, de
+06-08-2021; DOE
+07-08-2021)
+03.016.00 	2106.90
+2202.99.00
+Bebidas hidroeletrol├¡ticas (isot├┤nicas) em embalagem com
+capacidade igual ou superior a 600ml
+17 	(Reda├º├úo dada ao
+item pela
+Portaria 	CAT-57/21, de
+06-08-2021; DOE
+07-08-2021)
+03.021.00 	2203.00.00 	Cerveja em garrafa de vidro retorn├ível
+17 	03.021.00 	2203.00.00 	Cerveja
+17.1 (Item
+acrescentado pela
+Portaria 	CAT-57/21, de
+06-08-2021; DOE
+07-08-2021)
+03.021.01 	2203.00.00 	Cerveja em garrafa de vidro descart├ível
+17.2 	(Item
+acrescentado pela
+Portaria 	CAT-57/21, de
+06-08-2021; DOE
+07-08-2021)
+03.021.02 	2203.00.00 	Cerveja em garrafa de alum├¡nio
+17.3 	(Item
+acrescentado pela
+Portaria 	CAT-57/21, de
+06-08-2021; DOE
+07-08-2021)
+03.021.03 	2203.00.00 	Cerveja em lata
+17.4 	(Item acrescentado
+pela Portaria CAT-57/21,
+de 06-08-2021; DOE
+07-08-2021)
+03.021.04 	2203.00.00 	Cerveja em barril
+17.5 	(Item
+acrescentado pela
+Portaria 	CAT-57/21, de
+06-08-2021; DOE
+07-08-2021)
+03.021.05 	2203.00.00 	Cerveja em embalagem PET
+
+-- 5 of 46 --
+
+17.6 	(Item
+acrescentado pela
+Portaria 	CAT-57/21, de
+06-08-2021; DOE
+07-08-2021)
+03.021.06 	2203.00.00 	Cerveja em outras embalagens
+18 	(Reda├º├úo dada ao
+item pela
+Portaria 	CAT-57/21, de
+06-08-2021; DOE
+07-08-2021)
+03.022.00 	2202.91.00 	Cerveja sem ├ílcool em garrafa de vidro retorn├ível
+18 	03.022.00 	2202.91.00 	Cerveja sem ├ílcool
+18.1 (Item
+acrescentado pela
+Portaria 	CAT-57/21, de
+06-08-2021; DOE
+07-08-2021)
+03.022.01 	2202.91.00 	Cerveja sem ├ílcool em garrafa de vidro descart├ível
+18.2 (Item
+acrescentado pela
+Portaria 	CAT-57/21, de
+06-08-2021; DOE
+07-08-2021)
+03.022.02 	2202.91.00 	Cerveja sem ├ílcool em garrafa de alum├¡nio
+18.3 (Item
+acrescentado pela
+Portaria 	CAT-57/21, de
+06-08-2021; DOE
+07-08-2021)
+03.022.03 	2202.91.00 	Cerveja sem ├ílcool em lata
+18.4 (Item
+acrescentado pela
+Portaria 	CAT-57/21, de
+06-08-2021; DOE
+07-08-2021)
+03.022.04 	2202.91.00 	Cerveja sem ├ílcool em barril
+18.5 (Item
+acrescentado pela
+Portaria 	CAT-57/21, de
+06-08-2021; DOE
+07-08-2021)
+03.022.05 	2202.91.00 	Cerveja sem ├ílcool em embalagem PET
+18.6 (Item
+acrescentado pela
+Portaria 	CAT-57/21, de
+06-08-2021; DOE
+07-08-2021)
+03.022.06 	2202.91.00 	Cerveja sem ├ílcool em outras embalagens
+19 	03.023.00 	2203.00.00 	Chope
+20 	03.024.00 	2201.10.00 	├ügua 	mineral 	em 	embalagens 	retorn├íveis 	com 	capacidade
+igual ou superior a 10 (dez) e inferior a 20 (vinte) litros
+21 	03.025.00 	2201.10.00 	├ügua 	mineral 	em 	embalagens 	retorn├íveis 	com 	capacidade
+igual ou superior a 20 (vinte) litros
+ANEXO IV
+SORVETE E PREPARADO PARA FABRICA├ç├âO DE SORVETE EM M├üQUINA
+(artigo 295 do RICMS)
+ITEM 	CEST 	NCM/SH 	DESCRI├ç├âO
+1 	23.001.00 	2105.00 	Sorvetes de qualquer esp├®cie
+
+-- 6 of 46 --
+
+2 (Reda├º├úo dada ao item
+pela Portaria 	SRE-31/23,
+de 05-05-2023, DOE
+06-05-2023; efeitos a
+partir de 1┬║ de junho de
+2023)
+2 	23.002.00 	1806
+1901
+2106
+Preparados para fabrica├º├úo de sorvete em m├íquina
+ANEXO V
+VE├ìCULO NOVO DE DUAS E TR├èS RODAS MOTORIZADO
+(artigo 299 do RICMS)
+ITEM 	CEST 	NCM/SH 	DESCRI├ç├âO
+(Reda├º├úo dada ao
+item pela
+Portaria SRE-46/22,
+de 23-06-2022;
+DOE
+24-06-2022; efeitos
+desde 1┬║ de mar├ºo
+de 2022
+
+
+## 5. Codigos_CST_PIS_COFINS_260205_105256.pdf
+----------------------------------------
+C├│digos CST ÔÇô PIS e COFINS
+Tabela oficial de C├│digo de Situa├º├úo Tribut├íria (CST) aplic├ível ao PIS e ├á COFINS, conforme
+EFD-Contribui├º├Áes ÔÇô Receita Federal do Brasil.
+CST Descri├º├úo
+01 Opera├º├úo tribut├ível com al├¡quota b├ísica
+02 Opera├º├úo tribut├ível com al├¡quota diferenciada
+03 Opera├º├úo tribut├ível com al├¡quota por unidade de medida
+04 Opera├º├úo tribut├ível monof├ísica ÔÇô revenda com al├¡quota zero
+05 Opera├º├úo tribut├ível por substitui├º├úo tribut├íria
+06 Opera├º├úo tribut├ível com al├¡quota zero
+07 Opera├º├úo isenta
+08 Opera├º├úo sem incid├¬ncia
+09 Opera├º├úo com suspens├úo
+49 Outras opera├º├Áes de sa├¡da
+50 Cr├®dito sobre bens adquiridos para revenda
+51 Cr├®dito sobre insumos
+52 Cr├®dito sobre energia el├®trica
+53 Cr├®dito sobre aluguel de pr├®dios
+54 Cr├®dito sobre bens do ativo imobilizado
+55 Cr├®dito sobre frete na opera├º├úo de compra
+56 Cr├®dito sobre frete na opera├º├úo de venda
+60 Cr├®dito presumido ÔÇô agroind├║stria
+61 Cr├®dito presumido ÔÇô produtos agropecu├írios
+62 Cr├®dito presumido ÔÇô cooperativas
+63 Cr├®dito presumido ÔÇô opera├º├Áes espec├¡ficas
+64 Cr├®dito presumido ÔÇô exporta├º├úo
+65 Cr├®dito presumido ÔÇô outras hip├│teses
+66 Cr├®dito presumido ÔÇô legisla├º├úo espec├¡fica
+67 Outras opera├º├Áes com direito a cr├®dito
+70 Aquisi├º├úo sem direito a cr├®dito
+71 Aquisi├º├úo com isen├º├úo
+72 Aquisi├º├úo com suspens├úo
+73 Aquisi├º├úo com al├¡quota zero
+74 Aquisi├º├úo sem incid├¬ncia
+75 Aquisi├º├úo por substitui├º├úo tribut├íria
+98 Outras situa├º├Áes
+
+-- 1 of 2 --
+
+99 Outras opera├º├Áes
+Fonte: Receita Federal do Brasil ÔÇô SPED / Guia Pr├ítico da EFD-Contribui├º├Áes.
+
+-- 2 of 2 --
+
+
+
+============================================================
+FIM DA LEITURA
+============================================================

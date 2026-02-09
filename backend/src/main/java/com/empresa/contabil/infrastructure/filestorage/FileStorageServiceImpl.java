@@ -57,6 +57,29 @@ public class FileStorageServiceImpl implements FileStorageService {
     }
     
     @Override
+    public String salvarBytes(byte[] bytes, String nomeArquivo) {
+        try {
+            if (bytes == null || bytes.length == 0) {
+                throw new RuntimeException("Conteúdo vazio não pode ser salvo");
+            }
+            String nomeFinal = nomeArquivo != null && !nomeArquivo.isEmpty()
+                    ? nomeArquivo
+                    : UUID.randomUUID().toString() + ".xlsx";
+            if (!nomeFinal.toLowerCase().endsWith(".xlsx") && !nomeFinal.toLowerCase().endsWith(".xls")) {
+                nomeFinal = nomeFinal + ".xlsx";
+            }
+            String nomeComId = UUID.randomUUID() + "_" + nomeFinal;
+            Path destino = this.rootLocation.resolve(nomeComId);
+            Files.write(destino, bytes);
+            log.info("Arquivo (bytes) salvo: {}", destino);
+            return nomeComId;
+        } catch (IOException e) {
+            log.error("Erro ao salvar arquivo (bytes)", e);
+            throw new RuntimeException("Erro ao salvar arquivo: " + e.getMessage(), e);
+        }
+    }
+    
+    @Override
     public InputStream ler(String caminhoArquivo) {
         try {
             Path arquivo = this.rootLocation.resolve(caminhoArquivo).normalize();

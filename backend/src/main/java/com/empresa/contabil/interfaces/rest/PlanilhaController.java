@@ -35,11 +35,13 @@ public class PlanilhaController {
     public ResponseEntity<PlanilhaDTO> uploadPlanilha(
             @RequestParam("arquivo") MultipartFile arquivo,
             @RequestParam("clienteId") UUID clienteId,
-            @RequestParam(value = "nomeArquivo", required = false) String nomeArquivo) {
+            @RequestParam(value = "nomeArquivo", required = false) String nomeArquivo,
+            @RequestParam(value = "corrigirComIA", required = false, defaultValue = "false") boolean corrigirComIA) {
         
         UploadPlanilhaRequest request = UploadPlanilhaRequest.builder()
                 .clienteId(clienteId)
                 .nomeArquivo(nomeArquivo != null ? nomeArquivo : arquivo.getOriginalFilename())
+                .corrigirComIA(corrigirComIA)
                 .build();
         
         PlanilhaDTO planilha = uploadPlanilhaUseCase.executar(request, arquivo);

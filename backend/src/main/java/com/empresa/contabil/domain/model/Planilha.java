@@ -25,6 +25,8 @@ public class Planilha {
     private LocalDateTime dataProcessamento;
     private LocalDateTime dataCriacao;
     private LocalDateTime dataAtualizacao;
+    private String processingLogs;
+    private String aiMetadata;
     
     @Builder.Default
     private List<Campo> campos = new ArrayList<>();
