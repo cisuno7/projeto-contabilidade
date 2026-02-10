@@ -1,0 +1,65 @@
+package com.empresa.contabil.domain.model;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+import jakarta.persistence.*;
+import lombok.Getter;
+
+@Getter
+@Entity
+@Table(name = "produto")
+
+public class Produto {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
+
+    // ======================
+    // Dados brutos da planilha
+    // ======================
+
+    @Column(nullable = false)
+    private String nome;
+
+    private String grupo;
+
+    @Column(name = "codigo_ncm")
+    private String codigoNcmInformado;
+
+    @Column(name = "codigo_cest")
+    private String codigoCestInformado;
+
+    @Column(length = 4)
+    private String csosn;
+
+    // ======================
+    // Referências validadas
+    // ======================
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ncm_id")
+    private NCM ncm;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cest_id")
+    private CEST cest;
+
+    // ======================
+    // Controle de validação
+    // ======================
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private StatusValidacaoProduto statusValidacao;
+
+    private LocalDateTime dataProcessamento;
+
+    // ======================
+    // Outros dados úteis
+    // ======================
+    @Column(precision = 15, scale = 2)
+    private BigDecimal valorUnitario;
+}
