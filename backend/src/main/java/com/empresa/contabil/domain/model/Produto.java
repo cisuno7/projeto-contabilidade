@@ -62,4 +62,22 @@ public class Produto {
     // ======================
     @Column(precision = 15, scale = 2)
     private BigDecimal valorUnitario;
+
+    public void definirStatus(StatusValidacaoProduto status) {
+    this.statusValidacao = status;
+}
+
+public void definirNcm(NCM ncm) {
+    this.ncm = ncm;
+}
+
+public void definirCest(CEST cest) {
+    this.cest = cest;
+}
+
+public void definirDataProcessamento(LocalDateTime data) {
+    this.dataProcessamento = data;
+}
+
+
 }

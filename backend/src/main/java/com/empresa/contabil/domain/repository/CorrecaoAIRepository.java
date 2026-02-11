@@ -10,6 +10,6 @@ import com.empresa.contabil.domain.model.Produto;
 
 public interface CorrecaoAIRepository extends JpaRepository<CorrecaoAIMetadata, UUID> {
 
-  List<CorrecaoAIMetadata> findByProdutoOrderByDataCorrecaoDesc(Produto produto);
+    List<CorrecaoAIMetadata> findByProdutoOrderByDataCorrecaoDesc(Produto produto);
 }
 

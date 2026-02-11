@@ -31,6 +31,22 @@ public class CEST {
 
     @Column(nullable = false)
     private boolean valido;
+
+protected CEST() {}
+
+public CEST(String codigo, NCM ncm, String descricao) {
+    this.codigo = codigo;
+    this.ncm = ncm;
+    this.descricao = descricao;
+    this.valido = true;
+}
+
+
+    public void atualizarDescricao(String descricao) {
+    this.descricao = descricao;
+}
+
+
 }
 
 
