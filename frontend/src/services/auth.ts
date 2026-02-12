@@ -73,7 +73,12 @@ export const authService = {
         console.warn('Endpoint de autenticação não encontrado. Usando autenticação mockada para desenvolvimento.');
         // Mock para desenvolvimento - remover quando backend estiver implementado
         const mockResponse: LoginResponse = {
+          userId: '1',
+          username: 'Usuário de Teste',
+          email,
+          role: 'user',
           token: 'mock-token-' + Date.now(),
+          tokenType: 'Bearer',
           usuario: {
             id: '1',
             email,

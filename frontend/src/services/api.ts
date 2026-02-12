@@ -3,9 +3,15 @@ import type { Planilha, DashboardEstatisticas } from '../types';
 
 const api = axios.create({
   baseURL: '/api',
-  headers: {
-    'Content-Type': 'application/json',
-  },
+});
+
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers = config.headers || {};
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
 });
 
 export const planilhaService = {
@@ -23,11 +29,7 @@ export const planilhaService = {
     }
     formData.append('corrigirComIA', String(corrigirComIA));
 
-    const response = await api.post<Planilha>('/planilhas/upload', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+    const response = await api.post<Planilha>('/planilhas/upload', formData);
     return response.data;
   },
 
