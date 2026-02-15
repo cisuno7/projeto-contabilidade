@@ -44,7 +44,7 @@ spring:
 
   datasource:
     # URL recomendada pelo Supabase para IPv4 (POOLER)
-    url: jdbc:postgresql://aws-1-us-east-2.pooler.supabase.com:6543/postgres?sslmode=require
+    url: jdbc:postgresql://aws-1-us-east-2.pooler.supabase.com:6543/postgres?sslmode=require&prepareThreshold=0
     username: postgres.qilwtajqgonurweqlznd
     password: 'Ga@77142153'
     driver-class-name: org.postgresql.Driver

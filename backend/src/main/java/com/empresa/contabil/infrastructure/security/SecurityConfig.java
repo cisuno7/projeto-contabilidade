@@ -44,6 +44,7 @@ public class SecurityConfig {
                 // Endpoints públicos
                 .requestMatchers("/auth/**").permitAll()
                 .requestMatchers("/h2-console/**").permitAll()
+                .requestMatchers("/ai/**").permitAll()
                 // Outros endpoints requerem autenticação
                 .anyRequest().authenticated()
             )

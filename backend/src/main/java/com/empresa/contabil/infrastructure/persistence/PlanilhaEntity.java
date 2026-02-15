@@ -2,11 +2,16 @@ package com.empresa.contabil.infrastructure.persistence;
 
 import com.empresa.contabil.domain.model.Planilha;
 import com.empresa.contabil.domain.model.Planilha.StatusPlanilha;
+import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.JdbcType;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.dialect.PostgreSQLEnumJdbcType;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -33,14 +38,16 @@ public class PlanilhaEntity {
     private String storagePath;
 
     @Enumerated(EnumType.STRING)
-    @Column(columnDefinition = "status_processamento")
+    @JdbcType(PostgreSQLEnumJdbcType.class)
+    @Column(name = "status", columnDefinition = "status_processamento")
     private StatusPlanilha status;
 
     @Column(name = "processing_logs")
     private String processingLogs;
 
-    @Column(name = "ai_metadata", columnDefinition = "jsonb")
-    private String aiMetadata;
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "ai_metadata")
+    private JsonNode aiMetadata;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
