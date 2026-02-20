@@ -1,18 +1,20 @@
 package com.empresa.contabil.domain.service;
 
 import java.io.InputStream;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
+import com.empresa.contabil.application.dto.CESTImportDTO;
 import com.empresa.contabil.domain.model.CEST;
 import com.empresa.contabil.domain.model.NCM;
 import com.empresa.contabil.domain.repository.CESTRepository;
 import com.empresa.contabil.domain.repository.NCMRepository;
 import com.empresa.contabil.infrastructure.parser.CESTSPDFParser;
 import com.empresa.contabil.infrastructure.parser.NCMXlsxParser;
-import com.empresa.contabil.application.dto.CESTImportDTO;
+
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -45,21 +47,24 @@ public class CarregadorTabelasReferenciaService {
 
         for (NCM ncmImportado : listaImportada) {
 
-            Optional<NCM> existenteOpt = ncmRepository.findByCodigo(ncmImportado.getCodigo());
+            Optional<NCM> existenteOpt =
+                    ncmRepository.findByCodigo(ncmImportado.getCodigo());
 
             if (existenteOpt.isPresent()) {
 
                 NCM existente = existenteOpt.get();
 
-                existente = atualizarNcm(existente, ncmImportado);
+                // Atualiza o próprio objeto gerenciado pelo JPA
+                atualizarNcm(existente, ncmImportado);
 
                 paraSalvar.add(existente);
 
             } else {
+
                 paraSalvar.add(ncmImportado);
             }
 
-            if (paraSalvar.size() == BATCH_SIZE) {
+            if (paraSalvar.size() >= BATCH_SIZE) {
                 ncmRepository.saveAll(paraSalvar);
                 paraSalvar.clear();
             }
@@ -72,22 +77,20 @@ public class CarregadorTabelasReferenciaService {
         log.info("Carga de NCM finalizada com sucesso.");
     }
 
-    private NCM atualizarNcm(NCM existente, NCM novo) {
+    private void atualizarNcm(NCM existente, NCM novo) {
 
-        // Atualiza apenas campos relevantes
-        // (se quiser comparar antes, pode adicionar lógica)
+        existente.atualizarDescricao(novo.getDescricao());
 
-        existente = new NCM(
-                novo.getCodigo(),
-                novo.getDescricao(),
+        existente.atualizarVigencia(
                 novo.getDataInicioVigencia(),
-                novo.getDataFimVigencia(),
+                novo.getDataFimVigencia()
+        );
+
+        existente.atualizarAtoLegal(
                 novo.getAtoLegalInicio(),
                 novo.getNumero(),
                 novo.getAno()
         );
-
-        return existente;
     }
 
     // =============================
@@ -104,10 +107,15 @@ public class CarregadorTabelasReferenciaService {
 
         for (CESTImportDTO dto : listaImportada) {
 
-            Optional<NCM> ncmOpt = ncmRepository.findByCodigo(dto.codigoNcm());
+            Optional<NCM> ncmOpt =
+                    ncmRepository.findByCodigo(dto.codigoNcm());
 
             if (ncmOpt.isEmpty()) {
-                log.warn("NCM {} não encontrado para CEST {}", dto.codigoNcm(), dto.codigoCest());
+
+                log.warn("NCM {} não encontrado para CEST {}",
+                        dto.codigoNcm(),
+                        dto.codigoCest());
+
                 continue;
             }
 
@@ -120,6 +128,7 @@ public class CarregadorTabelasReferenciaService {
 
                 CEST existente = existenteOpt.get();
                 existente.atualizarDescricao(dto.descricao());
+
                 paraSalvar.add(existente);
 
             } else {
@@ -133,7 +142,7 @@ public class CarregadorTabelasReferenciaService {
                 paraSalvar.add(novo);
             }
 
-            if (paraSalvar.size() == BATCH_SIZE) {
+            if (paraSalvar.size() >= BATCH_SIZE) {
                 cestRepository.saveAll(paraSalvar);
                 paraSalvar.clear();
             }

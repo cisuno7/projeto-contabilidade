@@ -12,7 +12,7 @@ import com.empresa.contabil.domain.model.NCM;
 public interface CESTRepository extends JpaRepository<CEST, UUID> {
     Optional<CEST> findByCodigo(String codigo);
 
-    List<CEST> findByNcm(NCM ncm);
+    List<CEST> findAllByNcm(NCM ncm);
 
     Optional<CEST> findByCodigoAndNcm(String codigo, NCM ncm);
 

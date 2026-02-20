@@ -63,7 +63,7 @@ spring:
 # Configurações de integração com IA
 ai:
   service:
-    api-key: ${AI_API_KEY:}
+    api-key: ${AI_API_KEY}
     base-url: ${AI_BASE_URL:https://api.openai.com/v1}
     timeout: 30000
     model: ${AI_MODEL:gpt-4}
