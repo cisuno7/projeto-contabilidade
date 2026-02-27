@@ -23,17 +23,7 @@ const Navbar: React.FC = () => {
   };
 
   const navItems = [
-    {
-      path: '/',
-      label: 'Dashboard',
-      icon: (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M3 7V5C3 3.89543 3.89543 3 5 3H7M3 7V7C3 8.10457 3.89543 9 5 9H7M3 7L21 7M3 7V17C3 18.1046 3.89543 19 5 19H19C20.1046 19 21 18.1046 21 17V7M21 7V7C21 5.89543 20.1046 5 19 5H17M21 7V17C21 18.1046 20.1046 19 19 19H5C3.89543 19 3 18.1046 3 17V7" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          <rect x="7" y="9" width="4" height="6" rx="1" stroke="#ffffff" strokeWidth="2"/>
-          <rect x="13" y="9" width="4" height="4" rx="1" stroke="#ffffff" strokeWidth="2"/>
-        </svg>
-      )
-    },
+  
     {
       path: '/upload',
       label: 'Upload',

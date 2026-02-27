@@ -7,7 +7,6 @@ import Navbar from './components/layout/Navbar/Navbar';
 import './App.css';
 
 // Lazy loading das páginas
-const Dashboard = lazy(() => import('./pages/Dashboard/Dashboard'));
 const Upload = lazy(() => import('./pages/Upload/Upload'));
 const Historico = lazy(() => import('./pages/Historico/Historico'));
 const Login = lazy(() => import('./pages/Login/Login'));
@@ -33,24 +32,35 @@ function ProtectedRoute({ children }: { children: React.ReactElement }) {
 function App() {
   return (
     <ErrorBoundary>
-    <Router>
-      <div className="app">
-          <Suspense fallback={
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
-              <LoadingSpinner size="large" />
-            </div>
-          }>
-          <Routes>
+      <Router>
+        <div className="app">
+          <Suspense
+            fallback={
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  minHeight: '100vh',
+                }}
+              >
+                <LoadingSpinner size="large" />
+              </div>
+            }
+          >
+            <Routes>
+
+              {/* Página pública */}
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
+
+              {/* Rota principal agora vai para Upload */}
               <Route
                 path="/"
-                element={
-                  <ProtectedRoute>
-                    <Dashboard />
-                  </ProtectedRoute>
-                }
+                element={<Navigate to="/upload" replace />}
               />
+
+              {/* Rotas protegidas */}
               <Route
                 path="/upload"
                 element={
@@ -59,6 +69,7 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+
               <Route
                 path="/historico"
                 element={
@@ -67,11 +78,14 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-              <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
+
+              {/* Qualquer rota inválida */}
+              <Route path="*" element={<Navigate to="/upload" replace />} />
+
+            </Routes>
           </Suspense>
-      </div>
-    </Router>
+        </div>
+      </Router>
     </ErrorBoundary>
   );
 }

@@ -28,7 +28,7 @@ export default function Login() {
 
     try {
       await authService.login(email, senha);
-      navigate('/');
+      navigate('/upload'); // 🔥 agora vai direto para upload
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.data?.message) {
         setErro(error.response.data.message);

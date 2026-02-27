@@ -1,4 +1,5 @@
-package com.empresa.contabil.interfaces.rest;
+
+/*package com.empresa.contabil.interfaces.rest;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -26,3 +27,4 @@ public class DashboardController {
         return ResponseEntity.ok(estatisticas);
     }
 }
+*/

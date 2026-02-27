@@ -31,16 +31,6 @@ export default function Historico() {
     }
   }, []);
 
-  const formatarData = useCallback((data: string): string => {
-    return new Date(data).toLocaleString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  }, []);
-
   if (loading) {
     return (
       <div className="historico-container">
@@ -103,9 +93,7 @@ export default function Historico() {
               <tr>
                 <th>Nome do Arquivo</th>
                 <th>Status</th>
-                <th>Data de Upload</th>
-                <th>Data de Processamento</th>
-                <th>Ações</th>
+                <th>Downloads</th>
               </tr>
             </thead>
             <tbody>
@@ -122,14 +110,6 @@ export default function Historico() {
                   </td>
                   <td>
                     <StatusBadge status={planilha.status} />
-                  </td>
-                  <td>
-                    <span className="table-cell-date">{formatarData(planilha.dataUpload)}</span>
-                  </td>
-                  <td>
-                    <span className="table-cell-date">
-                      {planilha.dataProcessamento ? formatarData(planilha.dataProcessamento) : '-'}
-                    </span>
                   </td>
                   <td>
                     <Button

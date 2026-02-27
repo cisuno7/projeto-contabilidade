@@ -81,20 +81,19 @@ public class ProcessarPlanilhaUseCaseImpl implements ProcessarPlanilhaUseCase {
             String nomeCorrigido = "corrigido_" + baseNome;
             String caminhoCorrigido = fileStorageService.salvarBytes(excelBytes, nomeCorrigido);
             
-            // Incluir caminho do arquivo corrigido no ai_metadata
-            String alteracoes = planilha.getAiMetadata();
-            try {
-                ObjectMapper mapper = new ObjectMapper();
-                ObjectNode meta = mapper.createObjectNode();
-                meta.put("processedFilePath", caminhoCorrigido);
-                if (alteracoes != null && !alteracoes.isBlank()) {
-                    meta.set("alteracoes", mapper.readTree(alteracoes));
-                }
-                planilha.setAiMetadata(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(meta));
-            } catch (Exception e) {
-                log.warn("Não foi possível mesclar ai_metadata com processedFilePath: {}", e.getMessage());
-                planilha.setAiMetadata("{\"processedFilePath\":\"" + caminhoCorrigido + "\"}");
-            }
+            
+           // Incluir caminho do arquivo corrigido no ai_metadata como TEXTO
+String alteracoes = planilha.getAiMetadata();
+
+String novoMetadata;
+
+if (alteracoes != null && !alteracoes.isBlank()) {
+    novoMetadata = alteracoes + "\n\nArquivo gerado: " + caminhoCorrigido;
+} else {
+    novoMetadata = "Arquivo gerado: " + caminhoCorrigido;
+}
+
+planilha.setAiMetadata(novoMetadata);
             
             planilha.finalizarProcessamento();
             planilha = planilhaRepository.salvar(planilha);

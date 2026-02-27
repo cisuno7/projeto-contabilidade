@@ -6,22 +6,21 @@ export interface Planilha {
   clienteId: string;
   dataUpload: string;
   dataProcessamento?: string;
+  podeBaixar?: boolean;
+  aiMetadata?: string;
 }
 
-export enum StatusPlanilha {
-  UPLOADED = 'UPLOADED',
-  PROCESSANDO = 'PROCESSANDO',
-  PROCESSADA = 'PROCESSADA',
-  ERRO = 'ERRO',
-  CONCLUIDA = 'CONCLUIDA',
-}
+export const StatusPlanilha = {
+  UPLOADED: 'UPLOADED',
+  PROCESSANDO: 'PROCESSANDO',
+  PROCESSADA: 'PROCESSADA',
+  ERRO: 'ERRO',
+  CONCLUIDA: 'CONCLUIDA',
+} as const;
 
-export interface DashboardEstatisticas {
-  totalPlanilhas: number;
-  planilhasProcessadas: number;
-  planilhasEmProcessamento: number;
-  taxaSucesso: number;
-}
+export type StatusPlanilha = typeof StatusPlanilha[keyof typeof StatusPlanilha];
+
+
 
 export interface Cliente {
   id: string;

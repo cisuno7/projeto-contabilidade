@@ -6,4 +6,5 @@ public interface AIService {
     String processarPreenchimento(String prompt, Map<String, Object> contexto);
     Map<String, Object> interpretarDadosPlanilha(String dadosPlanilha, String instrucoes);
     boolean isDisponivel();
+    String sugerirNcm(String nomeProduto, String grupo);
 }

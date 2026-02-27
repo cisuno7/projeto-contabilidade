@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { Planilha, DashboardEstatisticas } from '../types';
+import type { Planilha } from '../types';
 
 const api = axios.create({
   baseURL: '/api',
@@ -50,13 +50,6 @@ export const planilhaService = {
 
   listar: async (): Promise<Planilha[]> => {
     const response = await api.get<Planilha[]>('/planilhas');
-    return response.data;
-  },
-};
-
-export const dashboardService = {
-  obterEstatisticas: async (): Promise<DashboardEstatisticas> => {
-    const response = await api.get<DashboardEstatisticas>('/dashboard/estatisticas');
     return response.data;
   },
 };

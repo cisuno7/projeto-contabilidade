@@ -67,10 +67,11 @@ public class PlanilhaMapper {
         if (node == null) {
             return null;
         }
-        try {
-            return objectMapper.writeValueAsString(node);
-        } catch (Exception e) {
-            return node.toString();
+    
+        if (node.isTextual()) {
+            return node.asText();
         }
+    
+        return node.toPrettyString();
     }
 }
