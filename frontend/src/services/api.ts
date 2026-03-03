@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { Planilha } from '../types';
+import type { Planilha, Cliente } from '../types';
 
 const api = axios.create({
   baseURL: '/api',
@@ -50,6 +50,19 @@ export const planilhaService = {
 
   listar: async (): Promise<Planilha[]> => {
     const response = await api.get<Planilha[]>('/planilhas');
+    return response.data;
+  },
+};
+
+export const clienteService = {
+  listar: async (nome?: string): Promise<Cliente[]> => {
+    const params = nome ? { nome } : {};
+    const response = await api.get<Cliente[]>('/clientes', { params });
+    return response.data;
+  },
+
+  criar: async (dados: { name: string; documentNumber: string; estado?: string; regime?: string }): Promise<Cliente> => {
+    const response = await api.post<Cliente>('/clientes', dados);
     return response.data;
   },
 };

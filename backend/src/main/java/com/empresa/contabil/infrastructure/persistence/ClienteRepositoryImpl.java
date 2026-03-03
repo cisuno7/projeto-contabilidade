@@ -42,6 +42,16 @@ public class ClienteRepositoryImpl implements ClienteRepository {
                 .map(mapper::toDomain)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public List<Cliente> buscarPorNomeContendo(String nome) {
+        if (nome == null || nome.isBlank()) {
+            return buscarTodos();
+        }
+        return jpaRepository.findByNameContainingIgnoreCase(nome.trim()).stream()
+                .map(mapper::toDomain)
+                .collect(Collectors.toList());
+    }
     
     @Override
     public void deletar(UUID id) {

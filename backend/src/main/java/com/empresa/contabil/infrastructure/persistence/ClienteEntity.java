@@ -27,6 +27,12 @@ public class ClienteEntity {
     @Column(name = "document_number")
     private String documentNumber;
 
+    @Column(length = 2)
+    private String estado;
+
+    @Column(length = 50)
+    private String regime;
+
     @Column(nullable = false)
     private Boolean active;
     

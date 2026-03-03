@@ -16,15 +16,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class CorrecaoPlanilhaServiceImpl implements CorrecaoPlanilhaService {
-
-    private static final Pattern NCM_REGEX = Pattern.compile("\\d{8}");
 
     private final NCMRepository ncmRepository;
     private final CESTRepository cestRepository;
@@ -155,8 +152,9 @@ public class CorrecaoPlanilhaServiceImpl implements CorrecaoPlanilhaService {
 
                 if (ncmOpt.isPresent()) {
 
+                    // 🔥 ALTERAÇÃO IMPORTANTE AQUI
                     List<CEST> cestsOficiais =
-                            cestRepository.findAllByNcm(ncmOpt.get());
+                            cestRepository.buscarPorNcmCompativel(ncm);
 
                     if (!cestsOficiais.isEmpty()) {
 
@@ -224,7 +222,6 @@ public class CorrecaoPlanilhaServiceImpl implements CorrecaoPlanilhaService {
                         objectMapper.writerWithDefaultPrettyPrinter()
                                 .writeValueAsString(metadadosLinhas);
 
-                // 🔥 JSON apenas em log
                 log.debug("Detalhamento técnico da correção:\n{}", json);
 
                 StringBuilder resumo = new StringBuilder();
@@ -251,12 +248,9 @@ public class CorrecaoPlanilhaServiceImpl implements CorrecaoPlanilhaService {
             }
         }
 
-        planilha.setDataAtualizacao(
-                java.time.LocalDateTime.now()
-        );
+        planilha.setDataAtualizacao(java.time.LocalDateTime.now());
 
-        log.info("Correção concluída para planilha {}",
-                planilha.getId());
+        log.info("Correção concluída para planilha {}", planilha.getId());
 
         return planilha;
     }

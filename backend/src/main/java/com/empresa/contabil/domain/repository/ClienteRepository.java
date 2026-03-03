@@ -11,6 +11,7 @@ public interface ClienteRepository {
     Optional<Cliente> buscarPorId(UUID id);
     Optional<Cliente> buscarPorCnpj(String cnpj);
     List<Cliente> buscarTodos();
+    List<Cliente> buscarPorNomeContendo(String nome);
     void deletar(UUID id);
     boolean existe(UUID id);
     boolean existePorCnpj(String cnpj);

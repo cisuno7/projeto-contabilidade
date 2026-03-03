@@ -1,0 +1,91 @@
+.clientes-container {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  min-height: calc(100vh - 200px);
+}
+
+.clientes-header {
+  margin-bottom: 2rem;
+}
+
+.clientes-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 0.5rem 0;
+  letter-spacing: -0.02em;
+}
+
+.clientes-subtitle {
+  font-size: 1rem;
+  color: #64748b;
+  margin: 0;
+  font-weight: 400;
+}
+
+.clientes-form-section {
+  max-width: 500px;
+  background: white;
+  border-radius: 16px;
+  border: 1px solid #f1f5f9;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+}
+
+.clientes-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.clientes-select {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  font-size: 1rem;
+  color: #1f2937;
+  background: #ffffff;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  outline: none;
+  transition: all 0.2s;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.clientes-select:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.clientes-select:disabled {
+  background: #f9fafb;
+  color: #6b7280;
+  cursor: not-allowed;
+}
+
+.clientes-mensagem {
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  font-size: 0.875rem;
+}
+
+.clientes-mensagem--sucesso {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.clientes-mensagem--erro {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+@media (max-width: 640px) {
+  .clientes-container {
+    padding: 1rem;
+  }
+
+  .clientes-title {
+    font-size: 1.5rem;
+  }
+}

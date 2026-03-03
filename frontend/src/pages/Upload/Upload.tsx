@@ -1,19 +1,28 @@
-import { useState, useCallback, useRef } from 'react';
-import { planilhaService } from '../../services/api';
+import { useState, useCallback, useEffect, useRef } from 'react';
+import { planilhaService, clienteService } from '../../services/api';
 import { Button } from '../../components/ui/Button/Button';
-import { Input } from '../../components/ui/Input/Input';
-import type { Planilha } from '../../types';
+import type { Planilha, Cliente } from '../../types';
 import './Upload.css';
 
 export default function Upload() {
   const [arquivo, setArquivo] = useState<File | null>(null);
   const [clienteId, setClienteId] = useState('');
+  const [clientes, setClientes] = useState<Cliente[]>([]);
+  const [loadingClientes, setLoadingClientes] = useState(true);
   const [corrigirComIA, setCorrigirComIA] = useState(true);
   const [loading, setLoading] = useState(false);
   const [mensagem, setMensagem] = useState<{ texto: string; tipo: 'sucesso' | 'erro' } | null>(null);
   const [planilhaProcessada, setPlanilhaProcessada] = useState<Planilha | null>(null);
   const [downloading, setDownloading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    clienteService
+      .listar()
+      .then((lista) => setClientes(lista))
+      .catch(() => setClientes([]))
+      .finally(() => setLoadingClientes(false));
+  }, []);
 
   const handleBaixar = useCallback(async () => {
     if (!planilhaProcessada) return;
@@ -47,7 +56,7 @@ export default function Upload() {
     e.preventDefault();
     
     if (!arquivo || !clienteId.trim()) {
-      setMensagem({ texto: 'Por favor, selecione um arquivo e informe o ID do cliente', tipo: 'erro' });
+      setMensagem({ texto: 'Por favor, selecione um arquivo e um cliente', tipo: 'erro' });
       return;
     }
 
@@ -88,17 +97,29 @@ export default function Upload() {
       </div>
       
       <form onSubmit={handleSubmit} className="upload-form">
-        <Input
-          label="ID do Cliente"
-          id="clienteId"
-          type="text"
-          value={clienteId}
-          onChange={(e) => setClienteId(e.target.value)}
-          placeholder="Digite o ID do cliente"
-          required
-          fullWidth
-          disabled={loading}
-        />
+        <div className="input-group input-group--full-width">
+          <label htmlFor="clienteId" className="input-label">
+            Cliente
+          </label>
+          <select
+            id="clienteId"
+            value={clienteId}
+            onChange={(e) => setClienteId(e.target.value)}
+            disabled={loading || loadingClientes}
+            className="upload-select"
+            required
+          >
+            <option value="">— Selecione um cliente —</option>
+            {clientes.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name} {c.documentNumber ? `(${c.documentNumber})` : ''}
+              </option>
+            ))}
+          </select>
+          {loadingClientes && (
+            <span className="input-helper">Carregando clientes...</span>
+          )}
+        </div>
 
         <div className="input-group">
           <label htmlFor="arquivo" className="input-label">Selecione o arquivo</label>

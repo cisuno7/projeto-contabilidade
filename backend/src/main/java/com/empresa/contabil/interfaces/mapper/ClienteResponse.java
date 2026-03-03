@@ -13,6 +13,8 @@ public class ClienteResponse {
     private UUID id;
     private String name;
     private String documentNumber;
+    private String estado;
+    private String regime;
     private Boolean active;
 
     public static ClienteResponse fromDomain(Cliente cliente) {
@@ -20,6 +22,8 @@ public class ClienteResponse {
             cliente.getId(),
             cliente.getName(),
             cliente.getDocumentNumber(),
+            cliente.getEstado(),
+            cliente.getRegime(),
             cliente.getActive()
         );
     }

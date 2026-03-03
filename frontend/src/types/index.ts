@@ -4,6 +4,8 @@ export interface Planilha {
   tipoArquivo: string;
   status: StatusPlanilha;
   clienteId: string;
+  clienteNome?: string;
+  clienteCnpj?: string;
   dataUpload: string;
   dataProcessamento?: string;
   podeBaixar?: boolean;
@@ -24,8 +26,9 @@ export type StatusPlanilha = typeof StatusPlanilha[keyof typeof StatusPlanilha];
 
 export interface Cliente {
   id: string;
-  nome: string;
-  cnpj: string;
-  email: string;
-  telefone: string;
+  name: string;
+  documentNumber: string;
+  estado?: string;
+  regime?: string;
+  active?: boolean;
 }

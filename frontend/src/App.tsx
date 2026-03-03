@@ -9,6 +9,7 @@ import './App.css';
 // Lazy loading das páginas
 const Upload = lazy(() => import('./pages/Upload/Upload'));
 const Historico = lazy(() => import('./pages/Historico/Historico'));
+const Clientes = lazy(() => import('./pages/Clientes/Clientes'));
 const Login = lazy(() => import('./pages/Login/Login'));
 const Register = lazy(() => import('./pages/Register/Register'));
 
@@ -75,6 +76,15 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <Historico />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/clientes"
+                element={
+                  <ProtectedRoute>
+                    <Clientes />
                   </ProtectedRoute>
                 }
               />

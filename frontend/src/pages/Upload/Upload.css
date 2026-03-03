@@ -164,6 +164,31 @@
   margin-top: 0;
 }
 
+.upload-select {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  font-size: 1rem;
+  color: #1f2937;
+  background: #ffffff;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  outline: none;
+  transition: all 0.2s;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.upload-select:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.upload-select:disabled {
+  background: #f9fafb;
+  color: #6b7280;
+  cursor: not-allowed;
+}
+
 .upload-download {
   margin-top: 0.5rem;
 }

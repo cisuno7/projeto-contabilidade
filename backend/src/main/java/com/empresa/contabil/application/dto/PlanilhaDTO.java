@@ -19,6 +19,8 @@ public class PlanilhaDTO {
     private String tipoArquivo;
     private Planilha.StatusPlanilha status;
     private UUID clienteId;
+    private String clienteNome;
+    private String clienteCnpj;
     private LocalDateTime dataUpload;
     private LocalDateTime dataProcessamento;
     private String aiMetadata;

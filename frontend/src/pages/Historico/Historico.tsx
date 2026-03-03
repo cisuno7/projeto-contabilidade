@@ -92,6 +92,8 @@ export default function Historico() {
             <thead>
               <tr>
                 <th>Nome do Arquivo</th>
+                <th>Cliente</th>
+                <th>CNPJ</th>
                 <th>Status</th>
                 <th>Downloads</th>
               </tr>
@@ -108,6 +110,8 @@ export default function Historico() {
                       <span>{planilha.nomeArquivo}</span>
                     </div>
                   </td>
+                  <td>{planilha.clienteNome ?? '-'}</td>
+                  <td>{planilha.clienteCnpj ?? '-'}</td>
                   <td>
                     <StatusBadge status={planilha.status} />
                   </td>

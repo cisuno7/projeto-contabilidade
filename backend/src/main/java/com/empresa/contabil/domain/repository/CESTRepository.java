@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import com.empresa.contabil.domain.model.CEST;
 import com.empresa.contabil.domain.model.NCM;
@@ -17,4 +18,13 @@ public interface CESTRepository extends JpaRepository<CEST, UUID> {
     Optional<CEST> findByCodigoAndNcm(String codigo, NCM ncm);
 
     boolean existsByCodigoAndNcm(String codigo, NCM ncm);
+
+
+
+    @Query("""
+            SELECT c FROM CEST c
+            WHERE c.valido = true
+            AND :ncm LIKE CONCAT(c.codigo, '%')
+            """)
+    List<CEST> buscarPorNcmCompativel(String ncm);
 }
