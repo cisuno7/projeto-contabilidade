@@ -210,7 +210,12 @@ export default function Upload() {
                 </>
               )}
             </svg>
-            <span>{mensagem.texto}</span>
+            <div className="upload-mensagem-conteudo">
+              <span>{mensagem.texto}</span>
+              {mensagem.tipo === 'sucesso' && planilhaProcessada?.aiMetadata && (
+                <pre className="upload-mensagem-alteracoes">{planilhaProcessada.aiMetadata}</pre>
+              )}
+            </div>
           </div>
         )}
 

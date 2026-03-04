@@ -1,4 +1,5 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { Component } from 'react';
+import type { ErrorInfo, ReactNode } from 'react';
 import './ErrorBoundary.css';
 
 interface Props {
@@ -59,7 +60,7 @@ export class ErrorBoundary extends Component<Props, State> {
             <p className="error-boundary-message">
               Ocorreu um erro inesperado. Por favor, tente recarregar a página.
             </p>
-            {process.env.NODE_ENV === 'development' && this.state.error && (
+            {import.meta.env.DEV && this.state.error && (
               <details className="error-boundary-details">
                 <summary>Detalhes do erro (desenvolvimento)</summary>
                 <pre className="error-boundary-stack">
