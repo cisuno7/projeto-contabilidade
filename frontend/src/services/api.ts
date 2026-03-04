@@ -1,8 +1,11 @@
 import axios from 'axios';
 import type { Planilha, Cliente } from '../types';
 
+const API_BASE = import.meta.env.VITE_API_URL
+  || (import.meta.env.PROD ? 'https://projeto-contabilidade.onrender.com/api' : '/api');
+
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: API_BASE,
 });
 
 api.interceptors.request.use((config) => {
