@@ -71,27 +71,6 @@ export const authService = {
 
       return response.data;
     } catch (error) {
-      // Se o endpoint não existir ainda, simular autenticação para desenvolvimento
-      if (axios.isAxiosError(error) && error.response?.status === 404) {
-        console.warn('Endpoint de autenticação não encontrado. Usando autenticação mockada para desenvolvimento.');
-        // Mock para desenvolvimento - remover quando backend estiver implementado
-        const mockResponse: LoginResponse = {
-          userId: '1',
-          username: 'Usuário de Teste',
-          email,
-          role: 'user',
-          token: 'mock-token-' + Date.now(),
-          tokenType: 'Bearer',
-          usuario: {
-            id: '1',
-            email,
-            nome: 'Usuário de Teste',
-          },
-        };
-        localStorage.setItem('token', mockResponse.token);
-        localStorage.setItem('usuario', JSON.stringify(mockResponse.usuario));
-        return mockResponse;
-      }
       throw error;
     }
   },
