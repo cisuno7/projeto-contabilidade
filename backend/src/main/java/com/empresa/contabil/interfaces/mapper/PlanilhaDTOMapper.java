@@ -39,9 +39,9 @@ public class PlanilhaDTOMapper {
                 .dataProcessamento(planilha.getDataProcessamento())
                 
 
-                //
-                //Campos derivados do domínio (INTENÇÃO DE UI)
-                .podeBaixar(planilha.getStatus().equals(Planilha.StatusPlanilha.PROCESSADA))
+                // Campos derivados do domínio (INTENÇÃO DE UI)
+                .podeBaixar(planilha.getStatus().equals(Planilha.StatusPlanilha.PROCESSADA) || planilha.getStatus().equals(Planilha.StatusPlanilha.CONCLUIDA))
+                .temCorrigida(planilha.getCaminhoArquivoCorrigido() != null && !planilha.getCaminhoArquivoCorrigido().isBlank())
                 .finalizada(planilha.getStatus().equals(Planilha.StatusPlanilha.CONCLUIDA))
                 .emProcessamento(planilha.getStatus().equals(Planilha.StatusPlanilha.PROCESSANDO))
                 

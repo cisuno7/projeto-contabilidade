@@ -37,6 +37,9 @@ public class PlanilhaEntity {
     @Column(name = "storage_path", nullable = false)
     private String storagePath;
 
+    @Column(name = "processed_storage_path")
+    private String processedStoragePath;
+
     @Enumerated(EnumType.STRING)
     @JdbcType(PostgreSQLEnumJdbcType.class)
     @Column(name = "status", columnDefinition = "status_processamento")

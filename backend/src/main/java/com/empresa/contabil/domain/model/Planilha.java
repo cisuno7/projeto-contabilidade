@@ -19,6 +19,8 @@ public class Planilha {
     private String nomeArquivo;
     private String tipoArquivo; // XLSX, CSV
     private String caminhoArquivo;
+    /** Caminho do arquivo Excel já corrigido (NCM/CEST), quando existir. */
+    private String caminhoArquivoCorrigido;
     private StatusPlanilha status;
     private UUID clienteId;
     private LocalDateTime dataUpload;

@@ -70,7 +70,7 @@ public class CorrecaoPlanilhaServiceImpl implements CorrecaoPlanilhaService {
             Map<String, Campo> camposLinha = camposPorLinha.get(numeroLinha);
             if (camposLinha == null) continue;
 
-            String ncm = normalizar(linha.get("CODIGONCM"));
+            String ncm = normalizar(obterValor(linha, "CODIGONCM", "NCM"));
             String nome = normalizar(linha.get("NOME"));
             String grupo = normalizar(linha.get("GRUPO"));
 
@@ -93,16 +93,17 @@ public class CorrecaoPlanilhaServiceImpl implements CorrecaoPlanilhaService {
                         if (campoNcm != null) {
 
                             String antes = campoNcm.getValor();
-                            campoNcm.setValor(melhorMatch.getCodigo());
+                            String ncmFormatado = formatarNcmParaPlanilha(melhorMatch.getCodigo());
+                            campoNcm.setValor(ncmFormatado);
 
                             ncmCorrigidos.add(
-                                    nome + ": " + antes + " → " + melhorMatch.getCodigo()
+                                    nome + ": " + antes + " → " + ncmFormatado
                             );
 
                             Map<String, Object> acao = new LinkedHashMap<>();
                             acao.put("campo", "CODIGONCM");
                             acao.put("antes", antes);
-                            acao.put("depois", melhorMatch.getCodigo());
+                            acao.put("depois", ncmFormatado);
                             acao.put("tipo", "CORRECAO_POR_DESCRICAO_BASE");
                             acao.put("criterio", "BUSCA_DESCRICAO_NCM");
 
@@ -123,12 +124,12 @@ public class CorrecaoPlanilhaServiceImpl implements CorrecaoPlanilhaService {
 
                             if (ncmIA.isPresent()) {
 
-                                Campo campoNcm = camposLinha.get("CODIGONCM");
+                                Campo campoNcm = obterCampo(camposLinha, "CODIGONCM", "NCM");
 
                                 if (campoNcm != null) {
 
                                     String antes = campoNcm.getValor();
-                                    campoNcm.setValor(sugestaoIA);
+                                    campoNcm.setValor(formatarNcmParaPlanilha(sugestaoIA));
 
                                     ncmCorrigidos.add(
                                             nome + ": " + antes + " → " + sugestaoIA
@@ -151,10 +152,9 @@ public class CorrecaoPlanilhaServiceImpl implements CorrecaoPlanilhaService {
                 }
 
                 if (ncmOpt.isPresent()) {
-
-                    // 🔥 ALTERAÇÃO IMPORTANTE AQUI
+                    // Buscar CESTs pelo NCM vinculado no banco (não pelo código do CEST)
                     List<CEST> cestsOficiais =
-                            cestRepository.buscarPorNcmCompativel(ncm);
+                            cestRepository.findAllByNcm(ncmOpt.get());
 
                     if (!cestsOficiais.isEmpty()) {
 
@@ -163,8 +163,9 @@ public class CorrecaoPlanilhaServiceImpl implements CorrecaoPlanilhaService {
 
                         if (cestMatch.isPresent()) {
 
-                            String cestOficial = cestMatch.get().getCodigo();
-                            Campo campoCest = camposLinha.get("CEST");
+                            CEST cestEntity = cestMatch.get();
+                            String cestOficial = cestEntity.getCodigo(); // sempre 7 dígitos do banco (CEST)
+                            Campo campoCest = obterCampo(camposLinha, "CEST", "CODIGOCEST");
 
                             if (campoCest != null) {
 
@@ -176,10 +177,11 @@ public class CorrecaoPlanilhaServiceImpl implements CorrecaoPlanilhaService {
                                         !normalizar(antes)
                                                 .equals(normalizar(cestOficial))) {
 
-                                    campoCest.setValor(cestOficial);
+                                    campoCest.setValor(formatarCestParaPlanilha(cestOficial));
 
+                                    String cestFormatado = formatarCestParaPlanilha(cestOficial);
                                     cestCorrigidos.add(
-                                            nome + ": " + antes + " → " + cestOficial
+                                            nome + ": " + antes + " → " + cestFormatado
                                     );
 
                                     Map<String, Object> acao =
@@ -187,7 +189,7 @@ public class CorrecaoPlanilhaServiceImpl implements CorrecaoPlanilhaService {
 
                                     acao.put("campo", "CEST");
                                     acao.put("antes", antes);
-                                    acao.put("depois", cestOficial);
+                                    acao.put("depois", cestFormatado);
                                     acao.put("tipo",
                                             cestVazio
                                                     ? "PREENCHIMENTO_OFICIAL"
@@ -316,5 +318,39 @@ public class CorrecaoPlanilhaServiceImpl implements CorrecaoPlanilhaService {
         }
 
         return Optional.empty();
+    }
+
+    /** Obtém valor da linha por uma das chaves (ex.: CODIGONCM ou NCM). */
+    private static String obterValor(Map<String, String> linha, String... chaves) {
+        for (String chave : chaves) {
+            String v = linha.get(chave);
+            if (v != null && !v.isBlank()) return v;
+        }
+        return null;
+    }
+
+    /** Obtém campo da linha por um dos nomes canônicos (ex.: CODIGONCM ou NCM). */
+    private static Campo obterCampo(Map<String, Campo> camposLinha, String... nomes) {
+        for (String nome : nomes) {
+            Campo c = camposLinha.get(nome);
+            if (c != null) return c;
+        }
+        return null;
+    }
+
+    /** NCM no banco é 8 dígitos; formata para planilha (ex.: 2005.20.00). */
+    private static String formatarNcmParaPlanilha(String codigoNcm) {
+        if (codigoNcm == null || codigoNcm.isBlank()) return codigoNcm;
+        String digits = codigoNcm.replaceAll("\\D", "");
+        if (digits.length() < 8) return codigoNcm;
+        return digits.substring(0, 4) + "." + digits.substring(4, 6) + "." + digits.substring(6, 8);
+    }
+
+    /** CEST no banco é 7 dígitos; formata para planilha (ex.: 17.009.00). Nunca usar NCM aqui. */
+    private static String formatarCestParaPlanilha(String codigoCest) {
+        if (codigoCest == null || codigoCest.isBlank()) return codigoCest;
+        String digits = codigoCest.replaceAll("\\D", "");
+        if (digits.length() != 7) return codigoCest;
+        return digits.substring(0, 2) + "." + digits.substring(2, 5) + "." + digits.substring(5, 7);
     }
 }

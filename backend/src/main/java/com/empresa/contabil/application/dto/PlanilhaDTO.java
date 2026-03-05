@@ -27,6 +27,7 @@ public class PlanilhaDTO {
 
     //Campos derivados do domínio (INTENÇÃO DE UI)
     private boolean podeBaixar;
+    private boolean temCorrigida;
     private boolean finalizada;
     private boolean emProcessamento;
 }

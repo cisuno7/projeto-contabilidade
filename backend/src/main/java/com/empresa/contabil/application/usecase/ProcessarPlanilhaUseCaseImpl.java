@@ -80,10 +80,9 @@ public class ProcessarPlanilhaUseCaseImpl implements ProcessarPlanilhaUseCase {
             }
             String nomeCorrigido = "corrigido_" + baseNome;
             String caminhoCorrigido = fileStorageService.salvarBytes(excelBytes, nomeCorrigido);
-            
-            
-           // Incluir caminho do arquivo corrigido no ai_metadata como TEXTO
-String alteracoes = planilha.getAiMetadata();
+            planilha.setCaminhoArquivoCorrigido(caminhoCorrigido);
+
+            String alteracoes = planilha.getAiMetadata();
 
 String novoMetadata;
 
