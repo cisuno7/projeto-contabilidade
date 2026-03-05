@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
+import axios from 'axios';
 import { planilhaService, clienteService } from '../../services/api';
 import { Button } from '../../components/ui/Button/Button';
 import type { Planilha, Cliente } from '../../types';
@@ -39,7 +40,10 @@ export default function Upload() {
       document.body.removeChild(a);
     } catch (err) {
       console.error('Erro ao baixar planilha:', err);
-      setMensagem({ texto: 'Erro ao baixar a planilha. Tente novamente.', tipo: 'erro' });
+      const msg = axios.isAxiosError(err) && err.response?.data?.message
+        ? err.response.data.message
+        : 'Erro ao baixar a planilha. Tente novamente.';
+      setMensagem({ texto: msg, tipo: 'erro' });
     } finally {
       setDownloading(false);
     }
@@ -81,7 +85,10 @@ export default function Upload() {
       }
     } catch (error) {
       console.error('Erro ao fazer upload:', error);
-      setMensagem({ texto: 'Erro ao fazer upload da planilha. Tente novamente.', tipo: 'erro' });
+      const msg = axios.isAxiosError(error) && error.response?.data?.message
+        ? error.response.data.message
+        : 'Erro ao fazer upload da planilha. Tente novamente.';
+      setMensagem({ texto: msg, tipo: 'erro' });
     } finally {
       setLoading(false);
     }

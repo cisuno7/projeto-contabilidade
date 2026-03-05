@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.text.Normalizer;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -22,6 +23,31 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class InterpretadorPlanilhaServiceImpl implements InterpretadorPlanilhaService {
+
+    private static final Set<String> VARIACOES_CODIGONCM = Set.of("codigoncm", "ncm");
+    private static final Set<String> VARIACOES_CEST = Set.of("cest", "codigocest");
+
+    /**
+     * Normaliza nome de coluna (remove acentos, espaços, lowercase) para comparação.
+     */
+    private String normalizarParaComparacao(String nome) {
+        if (nome == null || nome.isEmpty()) return "";
+        String s = Normalizer.normalize(nome, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "")
+                .replaceAll("\\s+", "")
+                .toLowerCase();
+        return s;
+    }
+
+    /**
+     * Retorna o nome canônico da coluna se for uma variação conhecida de CODIGONCM ou CEST.
+     */
+    private String nomeCanonicoColuna(String nomeOriginal) {
+        String norm = normalizarParaComparacao(nomeOriginal);
+        if (VARIACOES_CODIGONCM.contains(norm)) return "CODIGONCM";
+        if (VARIACOES_CEST.contains(norm)) return "CEST";
+        return nomeOriginal;
+    }
     
     @Override
     public Planilha lerPlanilha(InputStream arquivo, String nomeArquivo, String tipoArquivo) {
@@ -75,10 +101,11 @@ public class InterpretadorPlanilhaServiceImpl implements InterpretadorPlanilhaSe
                         continue;
                     }
                     String valor = col < values.length ? values[col] : "";
+                    String nomeFinal = nomeCanonicoColuna(nomeColuna);
                     
                     Campo campo = Campo.builder()
                             .id(UUID.randomUUID())
-                            .nome(nomeColuna)
+                            .nome(nomeFinal)
                             .tipo("TEXTO")
                             .valor(valor != null ? valor.trim() : "")
                             .linha(linha)
@@ -121,7 +148,7 @@ public class InterpretadorPlanilhaServiceImpl implements InterpretadorPlanilhaSe
             for (Cell cell : headerRow) {
                 String header = dataFormatter.formatCellValue(cell).trim();
                 if (!header.isEmpty()) {
-                    cabecalhos.put(cell.getColumnIndex(), header);
+                    cabecalhos.put(cell.getColumnIndex(), nomeCanonicoColuna(header));
                 }
             }
             

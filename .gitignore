@@ -61,3 +61,5 @@ backend/src/main/resources/uploads/
 # Logs
 logs/
 *.log
+.vercel
+.env*.local

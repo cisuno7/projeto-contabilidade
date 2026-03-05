@@ -117,7 +117,7 @@ export default function Historico() {
                   </td>
                   <td>
                     <Button
-                      onClick={() => handleBaixar(planilha.id, planilha.nomeArquivo, planilha.temCorrigida)}
+                      onClick={() => handleBaixar(planilha.id, planilha.nomeArquivo, planilha.podeBaixar)}
                       disabled={!planilha.podeBaixar || downloadingId === planilha.id}
                       isLoading={downloadingId === planilha.id}
                       size="small"

@@ -67,7 +67,11 @@ public class UploadPlanilhaUseCaseImpl implements UploadPlanilhaUseCase {
                     return processada;
                 } catch (Exception e) {
                     log.error("Erro ao processar planilha após upload", e);
-                    return planilhaDTOMapper.toDTO(planilhaSalva);
+                    Throwable cause = e.getCause();
+                    if (cause instanceof IllegalArgumentException iae) {
+                        throw iae;
+                    }
+                    throw new RuntimeException(cause != null ? cause.getMessage() : e.getMessage(), e);
                 }
             }
             
