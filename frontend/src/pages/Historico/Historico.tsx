@@ -11,14 +11,14 @@ export default function Historico() {
   const { planilhas, loading, error, refetch } = usePlanilhas();
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
-  const handleBaixar = useCallback(async (planilhaId: string, nomeArquivo: string) => {
+  const handleBaixar = useCallback(async (planilhaId: string, nomeArquivo: string, temCorrigida?: boolean) => {
     try {
       setDownloadingId(planilhaId);
       const blob = await planilhaService.baixar(planilhaId);
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = nomeArquivo;
+      a.download = temCorrigida ? `corrigido_${nomeArquivo}` : nomeArquivo;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
@@ -117,7 +117,7 @@ export default function Historico() {
                   </td>
                   <td>
                     <Button
-                      onClick={() => handleBaixar(planilha.id, planilha.nomeArquivo)}
+                      onClick={() => handleBaixar(planilha.id, planilha.nomeArquivo, planilha.temCorrigida)}
                       disabled={!planilha.podeBaixar || downloadingId === planilha.id}
                       isLoading={downloadingId === planilha.id}
                       size="small"

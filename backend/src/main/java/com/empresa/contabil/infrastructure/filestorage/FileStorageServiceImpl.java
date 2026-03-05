@@ -2,7 +2,7 @@ package com.empresa.contabil.infrastructure.filestorage;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -13,7 +13,8 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.UUID;
 
-@Service
+@ConditionalOnProperty(name = "file.storage.type", havingValue = "local", matchIfMissing = true)
+@org.springframework.stereotype.Service
 @Slf4j
 public class FileStorageServiceImpl implements FileStorageService {
     

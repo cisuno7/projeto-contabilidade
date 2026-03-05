@@ -43,10 +43,9 @@ spring:
       on-profile: prod
 
   datasource:
-    # URL recomendada pelo Supabase para IPv4 (POOLER)
-    url: jdbc:postgresql://aws-1-us-east-2.pooler.supabase.com:6543/postgres?sslmode=require&prepareThreshold=0
-    username: postgres.qilwtajqgonurweqlznd
-    password: 'Ga@77142153'
+    url: ${DATABASE_URL}
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -69,10 +68,17 @@ ai:
     model: ${AI_MODEL:gpt-4}
 
 # Configurações de armazenamento de arquivos
+# type: local (disco) | supabase (bucket no Supabase Storage)
 file:
   storage:
+    type: ${FILE_STORAGE_TYPE:local}
     path: ${FILE_STORAGE_PATH:./uploads}
     max-size: 10485760 # 10MB
+    # Supabase Storage (usado quando type=supabase)
+    supabase:
+      url: ${SUPABASE_URL:}
+      service-role-key: ${SUPABASE_SERVICE_ROLE_KEY:}
+      bucket: ${SUPABASE_STORAGE_BUCKET:planilhas}
 
 # Configurações JWT
 jwt:
