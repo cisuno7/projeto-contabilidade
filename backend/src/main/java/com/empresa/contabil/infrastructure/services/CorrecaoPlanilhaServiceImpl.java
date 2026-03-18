@@ -75,128 +75,133 @@ public class CorrecaoPlanilhaServiceImpl implements CorrecaoPlanilhaService {
             String grupo = normalizar(linha.get("GRUPO"));
 
             List<Map<String, Object>> acoes = new ArrayList<>();
+            Campo campoNcm = obterCampo(camposLinha, "CODIGONCM", "NCM");
+            Optional<NCM> ncmOpt = Optional.empty();
 
             if (ncm != null && !ncm.isBlank()) {
+                ncmOpt = ncmRepository.findByCodigo(ncm);
+            }
 
-                Optional<NCM> ncmOpt = ncmRepository.findByCodigo(ncm);
+            if (ncmOpt.isEmpty()) {
 
-                if (ncmOpt.isEmpty()) {
+                List<NCM> possiveis =
+                        nome != null && !nome.isBlank()
+                                ? ncmRepository.buscarPorDescricaoAproximada(nome)
+                                : List.of();
 
-                    List<NCM> possiveis =
-                            ncmRepository.buscarPorDescricaoAproximada(nome);
+                if (!possiveis.isEmpty()) {
 
-                    if (!possiveis.isEmpty()) {
+                    NCM melhorMatch = possiveis.get(0);
 
-                        NCM melhorMatch = possiveis.get(0);
-                        Campo campoNcm = camposLinha.get("CODIGONCM");
+                    if (campoNcm != null) {
 
-                        if (campoNcm != null) {
+                        String antes = campoNcm.getValor();
+                        String ncmFormatado = formatarNcmParaPlanilha(melhorMatch.getCodigo());
+                        boolean ncmVazio = antes == null || antes.isBlank();
 
-                            String antes = campoNcm.getValor();
-                            String ncmFormatado = formatarNcmParaPlanilha(melhorMatch.getCodigo());
-                            campoNcm.setValor(ncmFormatado);
+                        campoNcm.setValor(ncmFormatado);
 
-                            ncmCorrigidos.add(
-                                    nome + ": " + antes + " → " + ncmFormatado
-                            );
+                        ncmCorrigidos.add(
+                                nome + ": " + antes + " → " + ncmFormatado
+                        );
 
-                            Map<String, Object> acao = new LinkedHashMap<>();
-                            acao.put("campo", "CODIGONCM");
-                            acao.put("antes", antes);
-                            acao.put("depois", ncmFormatado);
-                            acao.put("tipo", "CORRECAO_POR_DESCRICAO_BASE");
-                            acao.put("criterio", "BUSCA_DESCRICAO_NCM");
+                        Map<String, Object> acao = new LinkedHashMap<>();
+                        acao.put("campo", "CODIGONCM");
+                        acao.put("antes", antes);
+                        acao.put("depois", ncmFormatado);
+                        acao.put("tipo", ncmVazio ? "PREENCHIMENTO_POR_DESCRICAO_BASE" : "CORRECAO_POR_DESCRICAO_BASE");
+                        acao.put("criterio", "BUSCA_DESCRICAO_NCM");
 
-                            acoes.add(acao);
+                        acoes.add(acao);
+                    }
 
-                            ncm = melhorMatch.getCodigo();
-                            ncmOpt = Optional.of(melhorMatch);
-                        }
+                    ncm = melhorMatch.getCodigo();
+                    ncmOpt = Optional.of(melhorMatch);
 
-                    } else {
+                } else if (nome != null && !nome.isBlank()) {
 
-                        String sugestaoIA = aiService.sugerirNcm(nome, grupo);
+                    String sugestaoIA = aiService.sugerirNcm(nome, grupo);
 
-                        if (sugestaoIA != null) {
+                    if (sugestaoIA != null && !sugestaoIA.isBlank()) {
 
-                            Optional<NCM> ncmIA =
-                                    ncmRepository.findByCodigo(sugestaoIA);
+                        Optional<NCM> ncmIA =
+                                ncmRepository.findByCodigo(normalizar(sugestaoIA));
 
-                            if (ncmIA.isPresent()) {
+                        if (ncmIA.isPresent()) {
 
-                                Campo campoNcm = obterCampo(camposLinha, "CODIGONCM", "NCM");
+                            if (campoNcm != null) {
 
-                                if (campoNcm != null) {
+                                String antes = campoNcm.getValor();
+                                String ncmFormatado = formatarNcmParaPlanilha(ncmIA.get().getCodigo());
+                                boolean ncmVazio = antes == null || antes.isBlank();
 
-                                    String antes = campoNcm.getValor();
-                                    campoNcm.setValor(formatarNcmParaPlanilha(sugestaoIA));
+                                campoNcm.setValor(ncmFormatado);
 
-                                    ncmCorrigidos.add(
-                                            nome + ": " + antes + " → " + sugestaoIA
-                                    );
+                                ncmCorrigidos.add(
+                                        nome + ": " + antes + " → " + ncmFormatado
+                                );
 
-                                    Map<String, Object> acao = new LinkedHashMap<>();
-                                    acao.put("campo", "CODIGONCM");
-                                    acao.put("antes", antes);
-                                    acao.put("depois", sugestaoIA);
-                                    acao.put("tipo", "CORRECAO_VIA_IA_VALIDADA");
+                                Map<String, Object> acao = new LinkedHashMap<>();
+                                acao.put("campo", "CODIGONCM");
+                                acao.put("antes", antes);
+                                acao.put("depois", ncmFormatado);
+                                acao.put("tipo", ncmVazio ? "PREENCHIMENTO_VIA_IA_VALIDADA" : "CORRECAO_VIA_IA_VALIDADA");
 
-                                    acoes.add(acao);
-
-                                    ncm = sugestaoIA;
-                                    ncmOpt = ncmIA;
-                                }
+                                acoes.add(acao);
                             }
+
+                            ncm = ncmIA.get().getCodigo();
+                            ncmOpt = ncmIA;
                         }
                     }
                 }
+            }
 
-                if (ncmOpt.isPresent()) {
-                    // Buscar CESTs pelo NCM vinculado no banco (não pelo código do CEST)
-                    List<CEST> cestsOficiais =
-                            cestRepository.findAllByNcm(ncmOpt.get());
+            if (ncmOpt.isPresent()) {
+                // Buscar CESTs pelo NCM vinculado no banco (não pelo código do CEST)
+                List<CEST> cestsOficiais =
+                        cestRepository.findAllByNcm(ncmOpt.get());
 
-                    if (!cestsOficiais.isEmpty()) {
+                if (!cestsOficiais.isEmpty()) {
 
-                        Optional<CEST> cestMatch =
-                                encontrarMelhorCest(cestsOficiais, nome, grupo);
+                    Optional<CEST> cestMatch =
+                            encontrarMelhorCest(cestsOficiais, nome, grupo);
 
-                        if (cestMatch.isPresent()) {
+                    if (cestMatch.isPresent()) {
 
-                            CEST cestEntity = cestMatch.get();
-                            String cestOficial = cestEntity.getCodigo(); // sempre 7 dígitos do banco (CEST)
-                            Campo campoCest = obterCampo(camposLinha, "CEST", "CODIGOCEST");
+                        CEST cestEntity = cestMatch.get();
+                        String cestOficial = cestEntity.getCodigo(); // sempre 7 dígitos do banco (CEST)
+                        Campo campoCest = obterCampo(camposLinha, "CEST", "CODIGOCEST");
 
-                            if (campoCest != null) {
+                        if (campoCest != null) {
 
-                                String antes = campoCest.getValor();
-                                boolean cestVazio =
-                                        (antes == null || antes.isBlank());
+                            String antes = campoCest.getValor();
+                            boolean cestVazio =
+                                    (antes == null || antes.isBlank());
 
-                                if (cestVazio ||
-                                        !normalizar(antes)
-                                                .equals(normalizar(cestOficial))) {
+                            if (cestVazio ||
+                                    !normalizar(antes)
+                                            .equals(normalizar(cestOficial))) {
 
-                                    campoCest.setValor(formatarCestParaPlanilha(cestOficial));
+                                campoCest.setValor(formatarCestParaPlanilha(cestOficial));
 
-                                    String cestFormatado = formatarCestParaPlanilha(cestOficial);
-                                    cestCorrigidos.add(
-                                            nome + ": " + antes + " → " + cestFormatado
-                                    );
+                                String cestFormatado = formatarCestParaPlanilha(cestOficial);
+                                cestCorrigidos.add(
+                                        nome + ": " + antes + " → " + cestFormatado
+                                );
 
-                                    Map<String, Object> acao =
-                                            new LinkedHashMap<>();
+                                Map<String, Object> acao =
+                                        new LinkedHashMap<>();
 
-                                    acao.put("campo", "CEST");
-                                    acao.put("antes", antes);
-                                    acao.put("depois", cestFormatado);
-                                    acao.put("tipo",
-                                            cestVazio
-                                                    ? "PREENCHIMENTO_OFICIAL"
-                                                    : "CORRECAO_OFICIAL_BASE");
+                                acao.put("campo", "CEST");
+                                acao.put("antes", antes);
+                                acao.put("depois", cestFormatado);
+                                acao.put("tipo",
+                                        cestVazio
+                                                ? "PREENCHIMENTO_OFICIAL"
+                                                : "CORRECAO_OFICIAL_BASE");
 
-                                    acoes.add(acao);
-                                }
+                                acoes.add(acao);
                             }
                         }
                     }
