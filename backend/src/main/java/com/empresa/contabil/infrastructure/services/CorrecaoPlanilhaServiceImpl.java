@@ -4,8 +4,10 @@ import com.empresa.contabil.domain.model.CEST;
 import com.empresa.contabil.domain.model.Campo;
 import com.empresa.contabil.domain.model.NCM;
 import com.empresa.contabil.domain.model.Planilha;
+import com.empresa.contabil.domain.model.Produto;
 import com.empresa.contabil.domain.repository.CESTRepository;
 import com.empresa.contabil.domain.repository.NCMRepository;
+import com.empresa.contabil.domain.repository.ProdutoRepository;
 import com.empresa.contabil.domain.service.AIService;
 import com.empresa.contabil.domain.service.CorrecaoPlanilhaService;
 import com.empresa.contabil.domain.service.InterpretadorPlanilhaService;
@@ -25,6 +27,7 @@ public class CorrecaoPlanilhaServiceImpl implements CorrecaoPlanilhaService {
 
     private final NCMRepository ncmRepository;
     private final CESTRepository cestRepository;
+    private final ProdutoRepository produtoRepository;
     private final InterpretadorPlanilhaService interpretadorPlanilhaService;
     private final AIService aiService;
 
@@ -80,6 +83,59 @@ public class CorrecaoPlanilhaServiceImpl implements CorrecaoPlanilhaService {
 
             if (ncm != null && !ncm.isBlank()) {
                 ncmOpt = ncmRepository.findByCodigo(ncm);
+            }
+
+            if (ncmOpt.isEmpty() && nome != null && !nome.isBlank()) {
+
+                Optional<Produto> produtoMatch = buscarProdutoComClassificacao(nome, grupo);
+                if (produtoMatch.isPresent()) {
+                    Produto p = produtoMatch.get();
+                    String ncmProd = normalizar(p.getCodigoNcmInformado());
+                    String cestProd = normalizar(p.getCodigoCestInformado());
+                    Optional<NCM> ncmFromProd = ncmProd != null && !ncmProd.isBlank()
+                            ? ncmRepository.findByCodigo(ncmProd) : Optional.empty();
+                    Optional<CEST> cestFromProd = cestProd != null && cestProd.length() == 7
+                            ? cestRepository.findByCodigo(cestProd) : Optional.empty();
+
+                    if (ncmFromProd.isPresent() && cestFromProd.isPresent()) {
+
+                        String ncmFormatado = formatarNcmParaPlanilha(ncmFromProd.get().getCodigo());
+                        String cestFormatado = formatarCestParaPlanilha(cestFromProd.get().getCodigo());
+
+                        if (campoNcm != null) {
+                            String antesNcm = campoNcm.getValor();
+                            boolean ncmVazio = antesNcm == null || antesNcm.isBlank();
+                            campoNcm.setValor(ncmFormatado);
+                            ncmCorrigidos.add(nome + ": " + antesNcm + " → " + ncmFormatado);
+                            Map<String, Object> acao = new LinkedHashMap<>();
+                            acao.put("campo", "CODIGONCM");
+                            acao.put("antes", antesNcm);
+                            acao.put("depois", ncmFormatado);
+                            acao.put("tipo", ncmVazio ? "PREENCHIMENTO_TABELA_PRODUTO" : "CORRECAO_TABELA_PRODUTO");
+                            acao.put("criterio", "TABELA_PRODUTO");
+                            acoes.add(acao);
+                        }
+                        ncm = ncmFromProd.get().getCodigo();
+                        ncmOpt = ncmFromProd;
+
+                        Campo campoCest = obterCampo(camposLinha, "CEST", "CODIGOCEST");
+                        if (campoCest != null) {
+                            String antesCest = campoCest.getValor();
+                            boolean cestVazio = antesCest == null || antesCest.isBlank();
+                            if (cestVazio || !normalizar(antesCest).equals(normalizar(cestFromProd.get().getCodigo()))) {
+                                campoCest.setValor(cestFormatado);
+                                cestCorrigidos.add(nome + ": " + antesCest + " → " + cestFormatado);
+                                Map<String, Object> acao = new LinkedHashMap<>();
+                                acao.put("campo", "CEST");
+                                acao.put("antes", antesCest);
+                                acao.put("depois", cestFormatado);
+                                acao.put("tipo", cestVazio ? "PREENCHIMENTO_TABELA_PRODUTO" : "CORRECAO_TABELA_PRODUTO");
+                                acao.put("criterio", "TABELA_PRODUTO");
+                                acoes.add(acao);
+                            }
+                        }
+                    }
+                }
             }
 
             if (ncmOpt.isEmpty()) {
@@ -323,6 +379,19 @@ public class CorrecaoPlanilhaServiceImpl implements CorrecaoPlanilhaService {
         }
 
         return Optional.empty();
+    }
+
+    /**
+     * Busca na tabela produto por nome. Retorna o primeiro que tenha codigo_ncm e codigo_cest preenchidos.
+     * Prioriza match exato de nome, depois por grupo.
+     */
+    private Optional<Produto> buscarProdutoComClassificacao(String nome, String grupo) {
+        if (nome == null || nome.isBlank()) return Optional.empty();
+        List<Produto> candidatos = produtoRepository.buscarPorNomeContendo(nome);
+        return candidatos.stream()
+                .filter(p -> p.getCodigoNcmInformado() != null && !p.getCodigoNcmInformado().isBlank()
+                        && p.getCodigoCestInformado() != null && !p.getCodigoCestInformado().isBlank())
+                .findFirst();
     }
 
     /** Obtém valor da linha por uma das chaves (ex.: CODIGONCM ou NCM). */
