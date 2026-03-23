@@ -20,9 +20,12 @@ public interface ProdutoRepository extends JpaRepository<Produto, UUID> {
     List<Produto> findByCestIsNull();
 
     /**
-     * Busca produtos por nome contendo o termo (case insensitive).
-     * Usado para classificar planilhas: primeiro tenta achar NCM/CEST pelo cadastro de produtos.
+     * Busca produtos por nome - match nos dois sentidos (case insensitive):
+     * - produto.nome contém o termo (ex: produto "Leite UHT" encontra "Leite UHT Integral")
+     * - termo contém produto.nome (ex: planilha "Leite UHT Integral 1L" encontra produto "Leite UHT")
      */
-    @Query("SELECT p FROM Produto p WHERE LOWER(p.nome) LIKE LOWER(CONCAT('%', :termo, '%'))")
+    @Query("SELECT p FROM Produto p WHERE " +
+            "LOWER(p.nome) LIKE LOWER(CONCAT('%', :termo, '%')) " +
+            "OR LOWER(:termo) LIKE LOWER(CONCAT('%', p.nome, '%'))")
     List<Produto> buscarPorNomeContendo(@Param("termo") String termo);
 }

@@ -382,8 +382,8 @@ public class CorrecaoPlanilhaServiceImpl implements CorrecaoPlanilhaService {
     }
 
     /**
-     * Busca na tabela produto por nome. Retorna o primeiro que tenha codigo_ncm e codigo_cest preenchidos.
-     * Prioriza match exato de nome, depois por grupo.
+     * Busca na tabela produto por nome. Retorna o que tenha codigo_ncm e codigo_cest preenchidos.
+     * Prioriza: 1) match exato de nome, 2) grupo coincidente, 3) nome mais longo (mais específico).
      */
     private Optional<Produto> buscarProdutoComClassificacao(String nome, String grupo) {
         if (nome == null || nome.isBlank()) return Optional.empty();
@@ -391,7 +391,19 @@ public class CorrecaoPlanilhaServiceImpl implements CorrecaoPlanilhaService {
         return candidatos.stream()
                 .filter(p -> p.getCodigoNcmInformado() != null && !p.getCodigoNcmInformado().isBlank()
                         && p.getCodigoCestInformado() != null && !p.getCodigoCestInformado().isBlank())
-                .findFirst();
+                .min((a, b) -> {
+                    boolean aExato = nome.equalsIgnoreCase(a.getNome());
+                    boolean bExato = nome.equalsIgnoreCase(b.getNome());
+                    if (aExato != bExato) return aExato ? -1 : 1;
+                    if (grupo != null && !grupo.isBlank()) {
+                        boolean aGrupo = grupo.equalsIgnoreCase(a.getGrupo());
+                        boolean bGrupo = grupo.equalsIgnoreCase(b.getGrupo());
+                        if (aGrupo != bGrupo) return aGrupo ? -1 : 1;
+                    }
+                    int lenA = a.getNome() != null ? a.getNome().length() : 0;
+                    int lenB = b.getNome() != null ? b.getNome().length() : 0;
+                    return Integer.compare(lenB, lenA);
+                });
     }
 
     /** Obtém valor da linha por uma das chaves (ex.: CODIGONCM ou NCM). */
@@ -412,12 +424,20 @@ public class CorrecaoPlanilhaServiceImpl implements CorrecaoPlanilhaService {
         return null;
     }
 
-    /** NCM no banco é 8 dígitos; formata para planilha (ex.: 2005.20.00). */
+    /** NCM formata para planilha: 8 dígitos XX.XX.XX, 6 dígitos XX.XX.00, 4 dígitos XX.XX. */
     private static String formatarNcmParaPlanilha(String codigoNcm) {
         if (codigoNcm == null || codigoNcm.isBlank()) return codigoNcm;
         String digits = codigoNcm.replaceAll("\\D", "");
-        if (digits.length() < 8) return codigoNcm;
-        return digits.substring(0, 4) + "." + digits.substring(4, 6) + "." + digits.substring(6, 8);
+        if (digits.length() >= 8) {
+            return digits.substring(0, 4) + "." + digits.substring(4, 6) + "." + digits.substring(6, 8);
+        }
+        if (digits.length() == 6) {
+            return digits.substring(0, 4) + "." + digits.substring(4, 6) + ".00";
+        }
+        if (digits.length() == 4) {
+            return digits.substring(0, 2) + "." + digits.substring(2, 4);
+        }
+        return codigoNcm;
     }
 
     /** CEST no banco é 7 dígitos; formata para planilha (ex.: 17.009.00). Nunca usar NCM aqui. */
