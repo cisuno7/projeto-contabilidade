@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.text.Normalizer;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -24,6 +25,39 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class CorrecaoPlanilhaServiceImpl implements CorrecaoPlanilhaService {
+
+    private static final Map<String, Set<String>> DICIONARIO_SEMANTICO = Map.of(
+            "massas_alimenticias", Set.of(
+                    "massa", "massas", "macarrao", "espaguete", "parafuso", "penne", "lamen", "noodles", "nissin", "talharim"
+            ),
+            "achocolatados_po", Set.of(
+                    "achocolatado", "achocolatados", "nescau", "toddy", "cacau", "chocolate", "cappuccino"
+            ),
+            "batata_processada", Set.of(
+                    "batata", "palha", "chips", "ruffles", "lays", "frita", "frita", "cebola", "salsa", "churrasco"
+            ),
+            "goma_mascar", Set.of(
+                    "chiclete", "goma", "mascar", "trident"
+            ),
+            "bebidas_refrigerantes", Set.of(
+                    "refrigerante", "coca", "cola", "fanta", "sprite", "guarana", "schweppes", "tonica", "zero"
+            ),
+            "bebidas_sucos", Set.of(
+                    "suco", "nectar", "kapo", "tang", "valle", "maracuja", "limao", "laranja", "abacaxi", "tangerina", "uva", "frut"
+            ),
+            "agua_mineral", Set.of(
+                    "agua", "mineral", "crystal", "retornavel"
+            ),
+            "panificacao_geral", Set.of(
+                    "pao", "broa", "torrada", "wafer", "bolinho", "bolo", "pizza", "polvilho", "bauducco", "marilan"
+            ),
+            "doces_balas_confeitos", Set.of(
+                    "pirulito", "marshmallow", "bala", "bombom", "sonho", "doce"
+            ),
+            "oleos_e_condimentos", Set.of(
+                    "oleo", "soja", "azeitona", "azeitonas", "ketchup", "maionese", "vinagre", "fugini", "quero"
+            )
+    );
 
     private final NCMRepository ncmRepository;
     private final CESTRepository cestRepository;
@@ -90,6 +124,7 @@ public class CorrecaoPlanilhaServiceImpl implements CorrecaoPlanilhaService {
                 Optional<Produto> produtoMatch = buscarProdutoComClassificacao(nome, grupo);
                 if (produtoMatch.isPresent()) {
                     Produto p = produtoMatch.get();
+                    String criterioProduto = inferirCriterioProduto(nome, p.getNome());
                     String ncmProd = normalizar(p.getCodigoNcmInformado());
                     String cestProd = normalizar(p.getCodigoCestInformado());
                     Optional<NCM> ncmFromProd = ncmProd != null && !ncmProd.isBlank()
@@ -112,7 +147,7 @@ public class CorrecaoPlanilhaServiceImpl implements CorrecaoPlanilhaService {
                             acao.put("antes", antesNcm);
                             acao.put("depois", ncmFormatado);
                             acao.put("tipo", ncmVazio ? "PREENCHIMENTO_TABELA_PRODUTO" : "CORRECAO_TABELA_PRODUTO");
-                            acao.put("criterio", "TABELA_PRODUTO");
+                            acao.put("criterio", criterioProduto);
                             acoes.add(acao);
                         }
                         ncm = ncmFromProd.get().getCodigo();
@@ -130,7 +165,7 @@ public class CorrecaoPlanilhaServiceImpl implements CorrecaoPlanilhaService {
                                 acao.put("antes", antesCest);
                                 acao.put("depois", cestFormatado);
                                 acao.put("tipo", cestVazio ? "PREENCHIMENTO_TABELA_PRODUTO" : "CORRECAO_TABELA_PRODUTO");
-                                acao.put("criterio", "TABELA_PRODUTO");
+                                acao.put("criterio", criterioProduto);
                                 acoes.add(acao);
                             }
                         }
@@ -383,27 +418,110 @@ public class CorrecaoPlanilhaServiceImpl implements CorrecaoPlanilhaService {
 
     /**
      * Busca na tabela produto por nome. Retorna o que tenha codigo_ncm e codigo_cest preenchidos.
-     * Prioriza: 1) match exato de nome, 2) grupo coincidente, 3) nome mais longo (mais específico).
+     * Prioriza: 1) score de similaridade do nome, 2) grupo coincidente, 3) nome mais longo.
      */
     private Optional<Produto> buscarProdutoComClassificacao(String nome, String grupo) {
         if (nome == null || nome.isBlank()) return Optional.empty();
         List<Produto> candidatos = produtoRepository.buscarPorNomeContendo(nome);
+        if (candidatos.isEmpty()) {
+            // Fallback: varre catálogo para lidar com nomes comerciais (ex.: "Nescau 200g")
+            candidatos = produtoRepository.findAll();
+        }
+
+        final String nomeEntrada = nome;
+        final String grupoEntrada = grupo;
+
         return candidatos.stream()
                 .filter(p -> p.getCodigoNcmInformado() != null && !p.getCodigoNcmInformado().isBlank()
                         && p.getCodigoCestInformado() != null && !p.getCodigoCestInformado().isBlank())
+                .filter(p -> pontuarSimilaridadeProduto(nomeEntrada, p.getNome()) >= 2)
                 .min((a, b) -> {
-                    boolean aExato = nome.equalsIgnoreCase(a.getNome());
-                    boolean bExato = nome.equalsIgnoreCase(b.getNome());
-                    if (aExato != bExato) return aExato ? -1 : 1;
-                    if (grupo != null && !grupo.isBlank()) {
-                        boolean aGrupo = grupo.equalsIgnoreCase(a.getGrupo());
-                        boolean bGrupo = grupo.equalsIgnoreCase(b.getGrupo());
+                    int scoreA = pontuarSimilaridadeProduto(nomeEntrada, a.getNome());
+                    int scoreB = pontuarSimilaridadeProduto(nomeEntrada, b.getNome());
+                    if (scoreA != scoreB) return Integer.compare(scoreB, scoreA);
+
+                    if (grupoEntrada != null && !grupoEntrada.isBlank()) {
+                        boolean aGrupo = grupoEntrada.equalsIgnoreCase(a.getGrupo());
+                        boolean bGrupo = grupoEntrada.equalsIgnoreCase(b.getGrupo());
                         if (aGrupo != bGrupo) return aGrupo ? -1 : 1;
                     }
                     int lenA = a.getNome() != null ? a.getNome().length() : 0;
                     int lenB = b.getNome() != null ? b.getNome().length() : 0;
                     return Integer.compare(lenB, lenA);
                 });
+    }
+
+    /**
+     * Score simples para reduzir falsos negativos com nomes comerciais:
+     * - +4: match exato normalizado
+     * - +2: um contém o outro normalizado
+     * - +1 por token relevante em comum (sem números/unidades)
+     */
+    private int pontuarSimilaridadeProduto(String nomePlanilha, String nomeProduto) {
+        String a = normalizarTexto(nomePlanilha);
+        String b = normalizarTexto(nomeProduto);
+        if (a.isBlank() || b.isBlank()) return 0;
+
+        int score = 0;
+        if (a.equals(b)) score += 4;
+        if (a.contains(b) || b.contains(a)) score += 2;
+
+        Set<String> ta = tokensRelevantes(a);
+        Set<String> tb = tokensRelevantes(b);
+        ta.retainAll(tb);
+        score += ta.size();
+
+        Set<String> semA = tagsSemanticas(a);
+        Set<String> semB = tagsSemanticas(b);
+        semA.retainAll(semB);
+        if (!semA.isEmpty()) {
+            // Boost semântico para casos de "subentendido" (ex.: macarrão -> massas alimentícias)
+            score += 3 + semA.size();
+        }
+
+        return score;
+    }
+
+    private String inferirCriterioProduto(String nomePlanilha, String nomeProduto) {
+        Set<String> semA = tagsSemanticas(normalizarTexto(nomePlanilha));
+        Set<String> semB = tagsSemanticas(normalizarTexto(nomeProduto));
+        semA.retainAll(semB);
+        return semA.isEmpty() ? "TABELA_PRODUTO" : "TABELA_PRODUTO_SEMANTICA";
+    }
+
+    private String normalizarTexto(String valor) {
+        if (valor == null) return "";
+        String semAcento = Normalizer.normalize(valor, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "");
+        return semAcento.toLowerCase()
+                .replaceAll("[^a-z0-9\\s]", " ")
+                .replaceAll("\\s+", " ")
+                .trim();
+    }
+
+    private Set<String> tokensRelevantes(String texto) {
+        if (texto == null || texto.isBlank()) return Set.of();
+        Set<String> stop = Set.of("de", "da", "do", "dos", "das", "e", "com", "sem", "em", "para", "tipo", "g", "kg", "ml", "l");
+        return Arrays.stream(texto.split(" "))
+                .map(String::trim)
+                .filter(t -> !t.isBlank())
+                .filter(t -> !stop.contains(t))
+                .filter(t -> !t.matches("\\d+"))
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+    }
+
+    private Set<String> tagsSemanticas(String textoNormalizado) {
+        if (textoNormalizado == null || textoNormalizado.isBlank()) return Set.of();
+        Set<String> tags = new LinkedHashSet<>();
+        for (Map.Entry<String, Set<String>> entry : DICIONARIO_SEMANTICO.entrySet()) {
+            for (String termo : entry.getValue()) {
+                if (textoNormalizado.contains(termo)) {
+                    tags.add(entry.getKey());
+                    break;
+                }
+            }
+        }
+        return tags;
     }
 
     /** Obtém valor da linha por uma das chaves (ex.: CODIGONCM ou NCM). */
