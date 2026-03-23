@@ -34,7 +34,7 @@ public class CorrecaoPlanilhaServiceImpl implements CorrecaoPlanilhaService {
                     "achocolatado", "achocolatados", "nescau", "toddy", "cacau", "chocolate", "cappuccino"
             ),
             "batata_processada", Set.of(
-                    "batata", "palha", "chips", "ruffles", "lays", "frita", "frita", "cebola", "salsa", "churrasco"
+                    "batata", "palha", "chips", "ruffles", "lays", "frita", "cebola", "salsa", "churrasco"
             ),
             "goma_mascar", Set.of(
                     "chiclete", "goma", "mascar", "trident"
