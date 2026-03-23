@@ -40,7 +40,7 @@ public class CorrecaoPlanilhaServiceImpl implements CorrecaoPlanilhaService {
                     "chiclete", "goma", "mascar", "trident"
             ),
             "bebidas_refrigerantes", Set.of(
-                    "refrigerante", "coca", "cola", "fanta", "sprite", "guarana", "schweppes", "tonica", "zero"
+                    "refrigerante","Schweppes", "coca", "cola", "fanta", "sprite", "guarana", "schweppes", "tonica", "zero"
             ),
             "bebidas_sucos", Set.of(
                     "suco", "nectar", "kapo", "tang", "valle", "maracuja", "limao", "laranja", "abacaxi", "tangerina", "uva", "frut"
