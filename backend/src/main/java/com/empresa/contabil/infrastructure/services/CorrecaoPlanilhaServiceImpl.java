@@ -26,37 +26,70 @@ import java.util.stream.Collectors;
 @Slf4j
 public class CorrecaoPlanilhaServiceImpl implements CorrecaoPlanilhaService {
 
-    private static final Map<String, Set<String>> DICIONARIO_SEMANTICO = Map.of(
-            "massas_alimenticias", Set.of(
+    private static final Map<String, Set<String>> DICIONARIO_SEMANTICO = Map.ofEntries(
+            Map.entry("massas_alimenticias", Set.of(
                     "massa", "massas", "macarrao", "espaguete", "parafuso", "penne", "lamen", "noodles", "nissin", "talharim"
-            ),
-            "achocolatados_po", Set.of(
+            )),
+            Map.entry("achocolatados_po", Set.of(
                     "achocolatado", "achocolatados", "nescau", "toddy", "cacau", "chocolate", "cappuccino"
-            ),
-            "batata_processada", Set.of(
+            )),
+            Map.entry("batata_processada", Set.of(
                     "batata", "palha", "chips", "ruffles", "lays", "frita", "cebola", "salsa", "churrasco"
-            ),
-            "goma_mascar", Set.of(
+            )),
+            Map.entry("goma_mascar", Set.of(
                     "chiclete", "goma", "mascar", "trident"
-            ),
-            "bebidas_refrigerantes", Set.of(
-                    "refrigerante","Schweppes", "coca", "cola", "fanta", "sprite", "guarana", "schweppes", "tonica", "zero"
-            ),
-            "bebidas_sucos", Set.of(
+            )),
+            Map.entry("bebidas_refrigerantes", Set.of(
+                    "refrigerante", "schweppes", "coca", "cola", "fanta", "sprite", "guarana", "tonica", "zero"
+            )),
+            Map.entry("bebidas_sucos", Set.of(
                     "suco", "nectar", "kapo", "tang", "valle", "maracuja", "limao", "laranja", "abacaxi", "tangerina", "uva", "frut"
-            ),
-            "agua_mineral", Set.of(
+            )),
+            Map.entry("agua_mineral", Set.of(
                     "agua", "mineral", "crystal", "retornavel"
-            ),
-            "panificacao_geral", Set.of(
-                    "pao", "broa", "torrada", "wafer", "bolinho", "bolo", "pizza", "polvilho", "bauducco", "marilan"
-            ),
-            "doces_balas_confeitos", Set.of(
+            )),
+            Map.entry("panificacao_geral", Set.of(
+                    "pao", "broa", "torrada", "wafer", "bolinho", "bolo", "donuts", "pizza", "polvilho", "bauducco", "marilan"
+            )),
+            Map.entry("doces_balas_confeitos", Set.of(
                     "pirulito", "marshmallow", "bala", "bombom", "sonho", "doce"
-            ),
-            "oleos_e_condimentos", Set.of(
+            )),
+            Map.entry("oleos_e_condimentos", Set.of(
                     "oleo", "soja", "azeitona", "azeitonas", "ketchup", "maionese", "vinagre", "fugini", "quero"
-            )
+            )),
+            Map.entry("leite_e_laticinios", Set.of(
+                    "leite", "uht", "condensado", "iogurte", "yakult", "creme", "requeijao", "queijo", "manteiga", "mussarela", "prato", "parmesao"
+            )),
+            Map.entry("cha_e_mate", Set.of(
+                    "cha", "leao", "mate", "camomila", "hortela", "cidreira", "erva", "gelado"
+            )),
+            Map.entry("cafe", Set.of(
+                    "cafe", "canecao", "moraes", "soluvel", "nescafe", "latte"
+            )),
+            Map.entry("salgadinhos_fabitos_cheetos", Set.of(
+                    "fabitos", "cebolitos", "cheetos", "doritos", "lays", "ruffles"
+            )),
+            Map.entry("biscoitos_e_bolachas", Set.of(
+                    "biscoito", "cracker", "maisena", "trakinas", "passatempo", "recheado", "cookie", "torrada"
+            )),
+            Map.entry("fermentos_e_ingredientes", Set.of(
+                    "fermento", "royal", "gelatina", "amido", "fuba", "farinha", "acucar", "sal"
+            )),
+            Map.entry("temperos_prontos", Set.of(
+                    "maggi", "caldo", "sazon", "segredo", "tempero"
+            )),
+            Map.entry("coco_derivados", Set.of(
+                    "coco", "flocado", "ralado", "tapioca"
+            )),
+            Map.entry("filtro_papel", Set.of(
+                    "filtro", "melita", "papel"
+            )),
+            Map.entry("doces_tradicionais", Set.of(
+                    "pacoca", "moleque", "cocada", "cueca"
+            )),
+            Map.entry("lanches_frios", Set.of(
+                    "salgado", "esfiha", "enroladinho", "lanche", "mini"
+            ))
     );
 
     private final NCMRepository ncmRepository;
@@ -69,6 +102,15 @@ public class CorrecaoPlanilhaServiceImpl implements CorrecaoPlanilhaService {
 
     @Override
     public Planilha corrigirNcmECest(Planilha planilha) {
+        return corrigirNcmECest(planilha, null, null);
+    }
+
+    @Override
+    public Planilha corrigirNcmECest(
+            Planilha planilha,
+            List<Map<String, String>> linhasReferencia,
+            String nomeArquivoReferencia
+    ) {
 
         if (planilha == null) return null;
 
@@ -76,6 +118,7 @@ public class CorrecaoPlanilhaServiceImpl implements CorrecaoPlanilhaService {
 
         List<String> ncmCorrigidos = new ArrayList<>();
         List<String> cestCorrigidos = new ArrayList<>();
+        int correcoesViaReferencia = 0;
 
         Map<String, Object> dados = interpretadorPlanilhaService.extrairDadosEstruturados(planilha);
 
@@ -98,11 +141,13 @@ public class CorrecaoPlanilhaServiceImpl implements CorrecaoPlanilhaService {
                         ));
 
         List<Map<String, Object>> metadadosLinhas = new ArrayList<>();
+        int totalLinhas = 0;
 
         for (Map<String, String> linha : linhas) {
 
             Integer numeroLinha = encontrarNumeroLinha(camposPorLinha, linha);
             if (numeroLinha == null) continue;
+            totalLinhas++;
 
             Map<String, Campo> camposLinha = camposPorLinha.get(numeroLinha);
             if (camposLinha == null) continue;
@@ -119,7 +164,72 @@ public class CorrecaoPlanilhaServiceImpl implements CorrecaoPlanilhaService {
                 ncmOpt = ncmRepository.findByCodigo(ncm);
             }
 
-            if (ncmOpt.isEmpty() && nome != null && !nome.isBlank()) {
+            boolean resolucaoCompletaViaReferencia = false;
+            if (nome != null && !nome.isBlank()
+                    && linhasReferencia != null && !linhasReferencia.isEmpty()) {
+
+                Optional<ReferenciaMatch> refMatchOpt =
+                        buscarEmPlanilhaReferencia(nome, grupo, linhasReferencia);
+
+                if (refMatchOpt.isPresent()) {
+                    ReferenciaMatch ref = refMatchOpt.get();
+                    Optional<NCM> ncmRef = ncmRepository.findByCodigo(ref.ncm8());
+                    Optional<CEST> cestRef = ref.cest7() != null
+                            ? cestRepository.findByCodigo(ref.cest7())
+                            : Optional.empty();
+
+                    if (ncmRef.isPresent()) {
+                        if (campoNcm != null) {
+                            String antes = campoNcm.getValor();
+                            boolean vazio = antes == null || antes.isBlank();
+                            String ncmFormatado = formatarNcmParaPlanilha(ncmRef.get().getCodigo());
+                            campoNcm.setValor(ncmFormatado);
+                            ncmCorrigidos.add(nome + ": " + antes + " → " + ncmFormatado);
+
+                            Map<String, Object> acao = new LinkedHashMap<>();
+                            acao.put("campo", "CODIGONCM");
+                            acao.put("antes", antes);
+                            acao.put("depois", ncmFormatado);
+                            acao.put("tipo", vazio ? "PREENCHIMENTO_PLANILHA_REFERENCIA" : "CORRECAO_PLANILHA_REFERENCIA");
+                            acao.put("criterio", "PLANILHA_REFERENCIA_IA");
+                            acao.put("referencia_nome", ref.nomeReferencia());
+                            acoes.add(acao);
+                            correcoesViaReferencia++;
+                        }
+                        ncmOpt = ncmRef;
+                        ncm = ncmRef.get().getCodigo();
+                    }
+
+                    Campo campoCest = obterCampo(camposLinha, "CEST", "CODIGOCEST");
+                    if (campoCest != null && cestRef.isPresent()) {
+                        String antes = campoCest.getValor();
+                        boolean vazio = antes == null || antes.isBlank();
+                        if (vazio || !normalizar(antes).equals(normalizar(cestRef.get().getCodigo()))) {
+                            String cestFmt = formatarCestParaPlanilha(cestRef.get().getCodigo());
+                            campoCest.setValor(cestFmt);
+                            cestCorrigidos.add(nome + ": " + antes + " → " + cestFmt);
+
+                            Map<String, Object> acao = new LinkedHashMap<>();
+                            acao.put("campo", "CEST");
+                            acao.put("antes", antes);
+                            acao.put("depois", cestFmt);
+                            acao.put("tipo", vazio ? "PREENCHIMENTO_PLANILHA_REFERENCIA" : "CORRECAO_PLANILHA_REFERENCIA");
+                            acao.put("criterio", "PLANILHA_REFERENCIA_IA");
+                            acao.put("referencia_nome", ref.nomeReferencia());
+                            acoes.add(acao);
+                            correcoesViaReferencia++;
+                        }
+                    }
+
+                    boolean ncmResolvido = campoNcm == null
+                            || (campoNcm.getValor() != null && !campoNcm.getValor().isBlank());
+                    boolean cestResolvido = campoCest == null
+                            || (campoCest.getValor() != null && !campoCest.getValor().isBlank());
+                    resolucaoCompletaViaReferencia = ncmResolvido && cestResolvido;
+                }
+            }
+
+            if (!resolucaoCompletaViaReferencia && ncmOpt.isEmpty() && nome != null && !nome.isBlank()) {
 
                 Optional<Produto> produtoMatch = buscarProdutoComClassificacao(nome, grupo);
                 if (produtoMatch.isPresent()) {
@@ -173,7 +283,7 @@ public class CorrecaoPlanilhaServiceImpl implements CorrecaoPlanilhaService {
                 }
             }
 
-            if (ncmOpt.isEmpty()) {
+            if (!resolucaoCompletaViaReferencia && ncmOpt.isEmpty()) {
 
                 List<NCM> possiveis =
                         nome != null && !nome.isBlank()
@@ -248,7 +358,7 @@ public class CorrecaoPlanilhaServiceImpl implements CorrecaoPlanilhaService {
                 }
             }
 
-            if (ncmOpt.isPresent()) {
+            if (ncmOpt.isPresent() && !resolucaoCompletaViaReferencia) {
                 // Buscar CESTs pelo NCM vinculado no banco (não pelo código do CEST)
                 List<CEST> cestsOficiais =
                         cestRepository.findAllByNcm(ncmOpt.get());
@@ -313,37 +423,71 @@ public class CorrecaoPlanilhaServiceImpl implements CorrecaoPlanilhaService {
             }
         }
 
-        if (!metadadosLinhas.isEmpty()) {
-            try {
+        List<Map<String, Object>> pendentes =
+                montarRelatorioPendentes(linhas, camposPorLinha);
 
-                String json =
-                        objectMapper.writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(metadadosLinhas);
+        if (aiService.isDisponivel() && !pendentes.isEmpty()) {
+            aiService.enrichirAnaliseCorrelacaoIA(pendentes);
+        }
 
-                log.debug("Detalhamento técnico da correção:\n{}", json);
+        try {
 
-                StringBuilder resumo = new StringBuilder();
+            StringBuilder resumo = new StringBuilder();
+            if (!cestCorrigidos.isEmpty() || !ncmCorrigidos.isEmpty()) {
                 resumo.append("CEST e NCM ajustados\n\n");
-
                 if (!cestCorrigidos.isEmpty()) {
                     resumo.append("CEST corrigidos:\n\n");
-                    cestCorrigidos.forEach(c ->
-                            resumo.append(c).append("\n"));
+                    cestCorrigidos.forEach(c -> resumo.append(c).append("\n"));
                     resumo.append("\n");
                 }
-
                 if (!ncmCorrigidos.isEmpty()) {
                     resumo.append("NCM corrigidos:\n\n");
-                    ncmCorrigidos.forEach(n ->
-                            resumo.append(n).append("\n"));
+                    ncmCorrigidos.forEach(n -> resumo.append(n).append("\n"));
                     resumo.append("\n");
                 }
-
-                planilha.setAiMetadata(resumo.toString());
-
-            } catch (JsonProcessingException e) {
-                log.error("Erro ao gerar metadata", e);
+            } else {
+                resumo.append("Nenhum campo NCM/CEST alterado automaticamente nesta execução.\n\n");
             }
+
+            if (!pendentes.isEmpty()) {
+                resumo.append("Relatório de correlação: ")
+                        .append(pendentes.size())
+                        .append(" linha(s) ainda sem NCM e/ou CEST — veja o bloco JSON \"relatorioCorrelacao\" para candidatos na base e sugestões.\n");
+            }
+
+            Map<String, Object> relatorioCorrelacao = new LinkedHashMap<>();
+            relatorioCorrelacao.put("totalLinhas", totalLinhas);
+            relatorioCorrelacao.put("linhasComAlteracao", metadadosLinhas.size());
+            relatorioCorrelacao.put("linhasPendentes", pendentes.size());
+            relatorioCorrelacao.put("correcoesViaPlanilhaReferencia", correcoesViaReferencia);
+            relatorioCorrelacao.put("arquivoReferencia", nomeArquivoReferencia);
+            relatorioCorrelacao.put(
+                    "linhasReferenciaAnalisadas",
+                    linhasReferencia != null ? linhasReferencia.size() : 0
+            );
+            relatorioCorrelacao.put(
+                    "nota",
+                    "Os nomes reproduzem o que o cliente informou. Use as correlações para decidir inclusões na tabela produto ou ajustes no cadastro fiscal, sem mudar a planilha."
+            );
+            relatorioCorrelacao.put("pendentes", pendentes);
+
+            Map<String, Object> root = new LinkedHashMap<>();
+            root.put("resumoTexto", resumo.toString());
+            root.put("detalhesCorrecao", metadadosLinhas);
+            root.put("relatorioCorrelacao", relatorioCorrelacao);
+
+            planilha.setAiMetadata(
+                    objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(root)
+            );
+
+            log.debug(
+                    "Metadados de correção e correlação persistidos ({} linhas, {} pendentes)",
+                    totalLinhas,
+                    pendentes.size()
+            );
+
+        } catch (JsonProcessingException e) {
+            log.error("Erro ao gerar metadata", e);
         }
 
         planilha.setDataAtualizacao(java.time.LocalDateTime.now());
@@ -351,6 +495,212 @@ public class CorrecaoPlanilhaServiceImpl implements CorrecaoPlanilhaService {
         log.info("Correção concluída para planilha {}", planilha.getId());
 
         return planilha;
+    }
+
+    /**
+     * Linhas que continuam sem NCM e/ou CEST após o pipeline, com correlações na base para conferência.
+     */
+    private List<Map<String, Object>> montarRelatorioPendentes(
+            List<Map<String, String>> linhas,
+            Map<Integer, Map<String, Campo>> camposPorLinha) {
+
+        List<Map<String, Object>> pendentes = new ArrayList<>();
+
+        for (Map<String, String> linha : linhas) {
+            Integer numeroLinha = encontrarNumeroLinha(camposPorLinha, linha);
+            if (numeroLinha == null) {
+                continue;
+            }
+
+            Map<String, Campo> camposLinha = camposPorLinha.get(numeroLinha);
+            if (camposLinha == null) {
+                continue;
+            }
+
+            String nome = normalizar(linha.get("NOME"));
+            String grupo = normalizar(linha.get("GRUPO"));
+
+            Campo campoNcm = obterCampo(camposLinha, "CODIGONCM", "NCM");
+            Campo campoCest = obterCampo(camposLinha, "CEST", "CODIGOCEST");
+            String ncmVal = campoNcm != null ? campoNcm.getValor() : null;
+            String cestVal = campoCest != null ? campoCest.getValor() : null;
+
+            boolean faltaNcm = ncmVal == null || ncmVal.isBlank();
+            boolean faltaCest = cestVal == null || cestVal.isBlank();
+            if (!faltaNcm && !faltaCest) {
+                continue;
+            }
+
+            Map<String, Object> item = new LinkedHashMap<>();
+            item.put("linha", numeroLinha);
+            item.put("nome", nome);
+            item.put("grupo", grupo);
+            item.put("ncm_atual", ncmVal);
+            item.put("cest_atual", cestVal);
+            item.put("falta_ncm", faltaNcm);
+            item.put("falta_cest", faltaCest);
+
+            item.put("candidatos_produto", montarCandidatosProduto(nome, grupo));
+
+            if (faltaNcm && nome != null && !nome.isBlank()) {
+                List<NCM> ncms = ncmRepository.buscarPorDescricaoAproximada(nome);
+                List<Map<String, Object>> cn = new ArrayList<>();
+                for (NCM n : ncms.stream().limit(5).toList()) {
+                    Map<String, Object> m = new LinkedHashMap<>();
+                    m.put("codigo", n.getCodigo());
+                    m.put("descricao", n.getDescricao());
+                    cn.add(m);
+                }
+                item.put("candidatos_ncm_por_descricao", cn);
+            }
+
+            if (faltaCest && !faltaNcm) {
+                String codigoBusca = normalizar(ncmVal);
+                Optional<NCM> ncmR = ncmRepository.findByCodigo(codigoBusca);
+                if (ncmR.isEmpty() && codigoBusca != null) {
+                    String d = codigoBusca.replaceAll("\\D", "");
+                    if (d.length() >= 8) {
+                        ncmR = ncmRepository.findByCodigo(d.substring(0, 8));
+                    }
+                }
+                if (ncmR.isPresent()) {
+                    List<CEST> lista = cestRepository.findAllByNcm(ncmR.get());
+                    List<Map<String, Object>> op = new ArrayList<>();
+                    for (CEST c : lista.stream().limit(10).toList()) {
+                        Map<String, Object> m = new LinkedHashMap<>();
+                        m.put("codigo", c.getCodigo());
+                        m.put("descricao", c.getDescricao());
+                        op.add(m);
+                    }
+                    item.put("cest_disponiveis_para_ncm", op);
+                } else {
+                    item.put(
+                            "observacao",
+                            "NCM informado não foi encontrado na base; valide o código ou cadastre o vínculo NCM/CEST."
+                    );
+                }
+            }
+
+            pendentes.add(item);
+        }
+
+        return pendentes;
+    }
+
+    private Optional<ReferenciaMatch> buscarEmPlanilhaReferencia(
+            String nome,
+            String grupo,
+            List<Map<String, String>> linhasReferencia
+    ) {
+        if (nome == null || nome.isBlank() || linhasReferencia == null || linhasReferencia.isEmpty()) {
+            return Optional.empty();
+        }
+
+        ReferenciaMatch melhor = null;
+        int melhorScore = 0;
+
+        for (Map<String, String> linhaRef : linhasReferencia) {
+            String nomeRef = obterValorFlex(linhaRef, "produto", "nome", "descricao", "item");
+            String ncmRefBruto = obterValorFlex(linhaRef, "ncm sugerido", "ncm", "codigoncm");
+            String cestRefBruto = obterValorFlex(linhaRef, "cest sugerido", "cest", "codigocest");
+            String grupoRef = obterValorFlex(linhaRef, "grupo sugerido", "grupo");
+
+            String ncm8 = normalizarNcm8(ncmRefBruto);
+            if (nomeRef == null || nomeRef.isBlank() || ncm8 == null) {
+                continue;
+            }
+
+            int score = pontuarSimilaridadeProduto(nome, nomeRef);
+            if (grupo != null && !grupo.isBlank() && grupoRef != null && grupo.equalsIgnoreCase(grupoRef)) {
+                score += 2;
+            }
+            if (score < 2) {
+                continue;
+            }
+
+            String cest7 = normalizarCest7(cestRefBruto);
+            if (score > melhorScore) {
+                melhorScore = score;
+                melhor = new ReferenciaMatch(nomeRef, ncm8, cest7, score);
+            }
+        }
+
+        return Optional.ofNullable(melhor);
+    }
+
+    private String obterValorFlex(Map<String, String> linha, String... chaves) {
+        if (linha == null || linha.isEmpty()) return null;
+        for (String chave : chaves) {
+            String alvo = normalizarTexto(chave);
+            for (Map.Entry<String, String> entry : linha.entrySet()) {
+                if (normalizarTexto(entry.getKey()).equals(alvo)) {
+                    String v = entry.getValue();
+                    if (v != null && !v.isBlank()) return v.trim();
+                }
+            }
+        }
+        return null;
+    }
+
+    private String normalizarNcm8(String valor) {
+        if (valor == null || valor.isBlank()) return null;
+        String digits = valor.replaceAll("\\D", "");
+        if (digits.length() >= 8) return digits.substring(0, 8);
+        if (digits.length() == 6) return digits + "00";
+        if (digits.length() == 4) return digits + "0000";
+        return null;
+    }
+
+    private String normalizarCest7(String valor) {
+        if (valor == null || valor.isBlank()) return null;
+        if (valor.toLowerCase().contains("sem")) return null;
+        String digits = valor.replaceAll("\\D", "");
+        return digits.length() == 7 ? digits : null;
+    }
+
+    private record ReferenciaMatch(String nomeReferencia, String ncm8, String cest7, int score) {}
+
+    private List<Map<String, Object>> montarCandidatosProduto(String nome, String grupo) {
+        if (nome == null || nome.isBlank()) {
+            return List.of();
+        }
+        List<Produto> candidatos = produtoRepository.buscarPorNomeContendo(nome);
+        if (candidatos.isEmpty()) {
+            String tok = primeiroTokenSignificativo(nome);
+            if (tok != null) {
+                candidatos = produtoRepository.buscarPorNomeContendo(tok);
+            }
+        }
+        if (candidatos.isEmpty()) {
+            return List.of();
+        }
+
+        return candidatos.stream()
+                .map(p -> {
+                    Map<String, Object> m = new LinkedHashMap<>();
+                    m.put("nome", p.getNome());
+                    m.put("grupo", p.getGrupo());
+                    m.put("codigo_ncm", p.getCodigoNcmInformado());
+                    m.put("codigo_cest", p.getCodigoCestInformado());
+                    m.put("score_similaridade", pontuarSimilaridadeProduto(nome, p.getNome()));
+                    return m;
+                })
+                .sorted((a, b) -> Integer.compare(
+                        (Integer) b.get("score_similaridade"),
+                        (Integer) a.get("score_similaridade")
+                ))
+                .limit(5)
+                .collect(Collectors.toList());
+    }
+
+    private String primeiroTokenSignificativo(String nome) {
+        Set<String> stop = Set.of("de", "da", "do", "dos", "das", "e", "com", "sem", "em", "para");
+        for (String t : nome.toLowerCase().replaceAll("[^a-z0-9\\s]", " ").split("\\s+")) {
+            if (t.length() >= 3 && !stop.contains(t)) {
+                return t;
+            }
+        }
+        return null;
     }
 
     private Integer encontrarNumeroLinha(

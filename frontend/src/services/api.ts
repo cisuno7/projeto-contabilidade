@@ -23,6 +23,7 @@ export const planilhaService = {
     clienteId: string,
     nomeArquivo?: string,
     corrigirComIA: boolean = true,
+    arquivoReferencia?: File | null,
   ): Promise<Planilha> => {
     const formData = new FormData();
     formData.append('arquivo', arquivo);
@@ -31,6 +32,9 @@ export const planilhaService = {
       formData.append('nomeArquivo', nomeArquivo);
     }
     formData.append('corrigirComIA', String(corrigirComIA));
+    if (arquivoReferencia) {
+      formData.append('arquivoReferencia', arquivoReferencia);
+    }
 
     const response = await api.post<Planilha>('/planilhas/upload', formData);
     return response.data;

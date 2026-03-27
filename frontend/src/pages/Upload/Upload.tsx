@@ -5,8 +5,99 @@ import { Button } from '../../components/ui/Button/Button';
 import type { Planilha, Cliente } from '../../types';
 import './Upload.css';
 
+type RelatorioCorrelacaoJson = {
+  totalLinhas?: number;
+  linhasComAlteracao?: number;
+  linhasPendentes?: number;
+  nota?: string;
+  pendentes?: Array<Record<string, unknown>>;
+};
+
+type MetadataPlanilhaJson = {
+  resumoTexto?: string;
+  relatorioCorrelacao?: RelatorioCorrelacaoJson;
+  caminhoArquivoCorrigidoGerado?: string;
+};
+
+function renderAiMetadata(meta: string | undefined) {
+  if (!meta) return null;
+  const trimmed = meta.trim();
+  if (trimmed.startsWith('{')) {
+    try {
+      const parsed = JSON.parse(meta) as MetadataPlanilhaJson;
+      const rel = parsed.relatorioCorrelacao;
+      const pendentes = rel?.pendentes;
+      return (
+        <div className="upload-metadata-json">
+          {parsed.resumoTexto && (
+            <pre className="upload-mensagem-alteracoes">{parsed.resumoTexto}</pre>
+          )}
+          {rel && pendentes && pendentes.length > 0 && (
+            <div className="upload-relatorio-correlacao">
+              <h4 className="upload-relatorio-titulo">Relatório de correlação (conferência da base)</h4>
+              {rel.nota && <p className="upload-relatorio-nota">{rel.nota}</p>}
+              <p className="upload-relatorio-stats">
+                Total de linhas: {rel.totalLinhas ?? '—'} · Com alteração automática:{' '}
+                {rel.linhasComAlteracao ?? '—'} · Pendentes:{' '}
+                {rel.linhasPendentes ?? pendentes.length}
+              </p>
+              <ul className="upload-relatorio-lista">
+                {pendentes.map((p, i) => {
+                  const cands = p.candidatos_produto;
+                  const list =
+                    Array.isArray(cands) && cands.length > 0
+                      ? (cands as Array<Record<string, unknown>>)
+                      : [];
+                  return (
+                    <li key={i} className="upload-relatorio-item">
+                      <div className="upload-relatorio-linha">
+                        <strong>Linha {String(p.linha ?? '')}</strong>
+                        {' — '}
+                        <span>{String(p.nome ?? '')}</span>
+                      </div>
+                      <div className="upload-relatorio-tags">
+                        {p.falta_ncm && <span className="upload-tag">falta NCM</span>}
+                        {p.falta_cest && <span className="upload-tag">falta CEST</span>}
+                        {typeof p.ia_prioridade === 'string' && p.ia_prioridade && (
+                          <span className="upload-tag upload-tag--prioridade">
+                            prioridade: {p.ia_prioridade}
+                          </span>
+                        )}
+                      </div>
+                      {typeof p.ia_insight === 'string' && p.ia_insight && (
+                        <p className="upload-relatorio-insight">{p.ia_insight}</p>
+                      )}
+                      {list.length > 0 && (
+                        <details className="upload-relatorio-details">
+                          <summary>Candidatos na tabela produto (correlação)</summary>
+                          <ul className="upload-relatorio-sublista">
+                            {list.map((c, j) => (
+                              <li key={j}>
+                                {String(c.nome ?? '')} (similaridade {String(c.score_similaridade ?? '—')}) — NCM{' '}
+                                {String(c.codigo_ncm ?? '—')} · CEST {String(c.codigo_cest ?? '—')}
+                              </li>
+                            ))}
+                          </ul>
+                        </details>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          )}
+        </div>
+      );
+    } catch {
+      return <pre className="upload-mensagem-alteracoes">{meta}</pre>;
+    }
+  }
+  return <pre className="upload-mensagem-alteracoes">{meta}</pre>;
+}
+
 export default function Upload() {
   const [arquivo, setArquivo] = useState<File | null>(null);
+  const [arquivoReferencia, setArquivoReferencia] = useState<File | null>(null);
   const [clienteId, setClienteId] = useState('');
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [loadingClientes, setLoadingClientes] = useState(true);
@@ -68,7 +159,13 @@ export default function Upload() {
     setMensagem(null);
 
     try {
-      const planilha: Planilha = await planilhaService.upload(arquivo, clienteId.trim(), undefined, corrigirComIA);
+      const planilha: Planilha = await planilhaService.upload(
+        arquivo,
+        clienteId.trim(),
+        undefined,
+        corrigirComIA,
+        arquivoReferencia,
+      );
       const processada = corrigirComIA && planilha.podeBaixar;
       setMensagem({ 
         texto: processada 
@@ -78,6 +175,7 @@ export default function Upload() {
       });
       setPlanilhaProcessada(processada ? planilha : null);
       setArquivo(null);
+      setArquivoReferencia(null);
       setClienteId('');
       setCorrigirComIA(true);
       if (fileInputRef.current) {
@@ -92,7 +190,7 @@ export default function Upload() {
     } finally {
       setLoading(false);
     }
-  }, [arquivo, clienteId, corrigirComIA]);
+  }, [arquivo, clienteId, corrigirComIA, arquivoReferencia]);
 
   return (
     <div className="upload-container">
@@ -171,6 +269,47 @@ export default function Upload() {
         </div>
 
         <div className="input-group">
+          <label htmlFor="arquivoReferencia" className="input-label">
+            Planilha base de referência (opcional)
+          </label>
+          <div className="file-input-wrapper">
+            <input
+              id="arquivoReferencia"
+              type="file"
+              accept=".xlsx,.xls,.csv"
+              onChange={(e) => {
+                const file = e.target.files && e.target.files[0] ? e.target.files[0] : null;
+                setArquivoReferencia(file);
+              }}
+              disabled={loading}
+              className="file-input"
+            />
+            {arquivoReferencia && (
+              <div className="file-info">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M4 4C4 2.89543 4.89543 2 6 2H8.58579C8.851 2 9.10536 2.10536 9.29289 2.29289L12.7071 5.70711C12.8946 5.89464 13 6.149 13 6.41421V12C13 13.1046 12.1046 14 11 14H6C4.89543 14 4 13.1046 4 12V4Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M8 2V6H12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                <span>{arquivoReferencia.name}</span>
+                <button
+                  type="button"
+                  onClick={() => setArquivoReferencia(null)}
+                  className="file-remove"
+                  aria-label="Remover planilha referência"
+                >
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 4L4 12M4 4L12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                  </svg>
+                </button>
+              </div>
+            )}
+          </div>
+          <span className="input-helper">
+            Se enviada, a IA usa essa base para correlacionar nomes e aplicar NCM/CEST sem substituir sua lógica do banco.
+          </span>
+        </div>
+
+        <div className="input-group">
           <label className="input-label">Correção automática com IA</label>
           <div className="checkbox-row">
             <input
@@ -220,7 +359,7 @@ export default function Upload() {
             <div className="upload-mensagem-conteudo">
               <span>{mensagem.texto}</span>
               {mensagem.tipo === 'sucesso' && planilhaProcessada?.aiMetadata && (
-                <pre className="upload-mensagem-alteracoes">{planilhaProcessada.aiMetadata}</pre>
+                renderAiMetadata(planilhaProcessada.aiMetadata)
               )}
             </div>
           </div>
