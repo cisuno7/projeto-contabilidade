@@ -6,5 +6,8 @@
 .idea
 *.iml
 .vscode
-frontend
+# NÃO ignorar a pasta `frontend` — o Dockerfile na raiz precisa dela para embutir o React no JAR.
+# Só excluir artefatos pesados do contexto:
+frontend/node_modules
+frontend/dist
 backend/target
