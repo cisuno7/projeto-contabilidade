@@ -146,6 +146,34 @@
   min-width: 0;
 }
 
+.upload-bloco-referencia {
+  margin-top: 0.25rem;
+  padding: 1.25rem 1.25rem 1rem;
+  border-radius: 14px;
+  border: 2px solid rgba(99, 102, 241, 0.35);
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.06) 0%, rgba(129, 140, 248, 0.08) 100%);
+  box-shadow: 0 1px 3px rgba(99, 102, 241, 0.12);
+}
+
+.upload-bloco-referencia-titulo {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #4338ca;
+  letter-spacing: -0.02em;
+}
+
+.upload-bloco-referencia-desc {
+  margin: 0 0 1rem 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: #475569;
+}
+
+.upload-bloco-referencia .input-group--sem-margem-extra {
+  margin-bottom: 0;
+}
+
 .upload-mensagem-alteracoes {
   margin: 0;
   padding: 0.75rem 0 0;

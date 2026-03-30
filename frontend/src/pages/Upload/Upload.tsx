@@ -107,6 +107,7 @@ export default function Upload() {
   const [planilhaProcessada, setPlanilhaProcessada] = useState<Planilha | null>(null);
   const [downloading, setDownloading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const arquivoReferenciaRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     clienteService
@@ -180,6 +181,9 @@ export default function Upload() {
       setCorrigirComIA(true);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
+      }
+      if (arquivoReferenciaRef.current) {
+        arquivoReferenciaRef.current.value = '';
       }
     } catch (error) {
       console.error('Erro ao fazer upload:', error);
@@ -268,45 +272,61 @@ export default function Upload() {
           <span className="input-helper">Formatos aceitos: .xlsx, .xls, .csv</span>
         </div>
 
-        <div className="input-group">
-          <label htmlFor="arquivoReferencia" className="input-label">
-            Planilha base de referência (opcional)
-          </label>
-          <div className="file-input-wrapper">
-            <input
-              id="arquivoReferencia"
-              type="file"
-              accept=".xlsx,.xls,.csv"
-              onChange={(e) => {
-                const file = e.target.files && e.target.files[0] ? e.target.files[0] : null;
-                setArquivoReferencia(file);
-              }}
-              disabled={loading}
-              className="file-input"
-            />
-            {arquivoReferencia && (
-              <div className="file-info">
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M4 4C4 2.89543 4.89543 2 6 2H8.58579C8.851 2 9.10536 2.10536 9.29289 2.29289L12.7071 5.70711C12.8946 5.89464 13 6.149 13 6.41421V12C13 13.1046 12.1046 14 11 14H6C4.89543 14 4 13.1046 4 12V4Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  <path d="M8 2V6H12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-                <span>{arquivoReferencia.name}</span>
-                <button
-                  type="button"
-                  onClick={() => setArquivoReferencia(null)}
-                  className="file-remove"
-                  aria-label="Remover planilha referência"
-                >
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 4L4 12M4 4L12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+        <div className="upload-bloco-referencia" role="region" aria-labelledby="upload-referencia-titulo">
+          <h2 id="upload-referencia-titulo" className="upload-bloco-referencia-titulo">
+            Planilha base (prioridade na correção)
+          </h2>
+          <p className="upload-bloco-referencia-desc">
+            Envie aqui o arquivo oficial ou sua tabela de referência (ex.: <strong>CEST_Completo_SP.xlsx</strong>).
+            O sistema usa essa base <strong>antes</strong> do restante das regras.
+          </p>
+          <div className="input-group input-group--sem-margem-extra">
+            <label htmlFor="arquivoReferencia" className="input-label">
+              Arquivo da planilha base
+            </label>
+            <div className="file-input-wrapper">
+              <input
+                ref={arquivoReferenciaRef}
+                id="arquivoReferencia"
+                type="file"
+                accept=".xlsx,.xls,.csv"
+                onChange={(e) => {
+                  const file = e.target.files && e.target.files[0] ? e.target.files[0] : null;
+                  setArquivoReferencia(file);
+                }}
+                disabled={loading}
+                className="file-input"
+                aria-describedby="upload-referencia-ajuda"
+              />
+              {arquivoReferencia && (
+                <div className="file-info">
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 4C4 2.89543 4.89543 2 6 2H8.58579C8.851 2 9.10536 2.10536 9.29289 2.29289L12.7071 5.70711C12.8946 5.89464 13 6.149 13 6.41421V12C13 13.1046 12.1046 14 11 14H6C4.89543 14 4 13.1046 4 12V4Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M8 2V6H12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
-                </button>
-              </div>
-            )}
+                  <span>{arquivoReferencia.name}</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setArquivoReferencia(null);
+                      if (arquivoReferenciaRef.current) {
+                        arquivoReferenciaRef.current.value = '';
+                      }
+                    }}
+                    className="file-remove"
+                    aria-label="Remover planilha referência"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M12 4L4 12M4 4L12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                    </svg>
+                  </button>
+                </div>
+              )}
+            </div>
+            <span id="upload-referencia-ajuda" className="input-helper">
+              Formatos: .xlsx, .xls, .csv. Opcional — se não enviar, segue só a planilha principal e as regras do banco.
+            </span>
           </div>
-          <span className="input-helper">
-            Se enviada, a IA usa essa base para correlacionar nomes e aplicar NCM/CEST sem substituir sua lógica do banco.
-          </span>
         </div>
 
         <div className="input-group">
