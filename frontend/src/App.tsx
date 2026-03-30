@@ -13,6 +13,12 @@ const Clientes = lazy(() => import('./pages/Clientes/Clientes'));
 const Login = lazy(() => import('./pages/Login/Login'));
 const Register = lazy(() => import('./pages/Register/Register'));
 
+function routerBasename(): string | undefined {
+  const b = import.meta.env.BASE_URL;
+  if (b === '/' || b === '') return undefined;
+  return b.endsWith('/') ? b.slice(0, -1) : b;
+}
+
 function ProtectedRoute({ children }: { children: React.ReactElement }) {
   const isAuthenticated = authService.isAuthenticated();
 
@@ -33,7 +39,7 @@ function ProtectedRoute({ children }: { children: React.ReactElement }) {
 function App() {
   return (
     <ErrorBoundary>
-      <Router>
+      <Router basename={routerBasename()}>
         <div className="app">
           <Suspense
             fallback={

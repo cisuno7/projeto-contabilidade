@@ -1,5 +1,9 @@
-# Dockerfile para build com contexto na raiz do repo (ex: Render.com)
-# Use este arquivo se o Root Directory do Render for a raiz do projeto.
+# Dockerfile para build SÓ do backend (sem front).
+# Para deploy com React atualizado no mesmo serviço, use o Dockerfile na RAIZ do repo
+# (ele faz build do frontend + copia para src/main/resources/static).
+#
+# Use este arquivo apenas se o Root Directory do Render apontar somente para backend/
+# e o front for hospedado em outro lugar (ex.: Netlify) com build próprio.
 # Stage 1: build JAR com Maven
 FROM maven:3.9-eclipse-temurin-17-alpine AS builder
 WORKDIR /build

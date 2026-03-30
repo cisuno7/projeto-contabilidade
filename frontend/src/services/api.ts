@@ -1,8 +1,19 @@
 import axios from 'axios';
 import type { Planilha, Cliente } from '../types';
 
-const API_BASE = import.meta.env.VITE_API_URL
-  || (import.meta.env.PROD ? 'https://projeto-contabilidade.onrender.com/api' : '/api');
+/** API em produção: mesma origem quando o front é servido pelo Spring em /api; senão VITE_API_URL ou fallback. */
+function resolveApiBase(): string {
+  const explicit = import.meta.env.VITE_API_URL as string | undefined;
+  if (explicit) return explicit;
+  if (!import.meta.env.PROD) return '/api';
+  const base = import.meta.env.BASE_URL;
+  if (base && base !== '/') {
+    return `${window.location.origin}/api`;
+  }
+  return 'https://projeto-contabilidade.onrender.com/api';
+}
+
+const API_BASE = resolveApiBase();
 
 const api = axios.create({
   baseURL: API_BASE,

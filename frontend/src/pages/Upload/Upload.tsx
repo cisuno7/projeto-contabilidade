@@ -56,8 +56,12 @@ function renderAiMetadata(meta: string | undefined) {
                         <span>{String(p.nome ?? '')}</span>
                       </div>
                       <div className="upload-relatorio-tags">
-                        {p.falta_ncm && <span className="upload-tag">falta NCM</span>}
-                        {p.falta_cest && <span className="upload-tag">falta CEST</span>}
+                        {Boolean(p.falta_ncm) && (
+                          <span className="upload-tag">falta NCM</span>
+                        )}
+                        {Boolean(p.falta_cest) && (
+                          <span className="upload-tag">falta CEST</span>
+                        )}
                         {typeof p.ia_prioridade === 'string' && p.ia_prioridade && (
                           <span className="upload-tag upload-tag--prioridade">
                             prioridade: {p.ia_prioridade}
