@@ -43,9 +43,10 @@ public class SecurityConfig {
             .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 // Endpoints públicos
-                .requestMatchers("/auth/**").permitAll()
+                // Suporta com/sem context-path (/api) dependendo do ambiente (Render vs embedded)
+                .requestMatchers("/auth/**", "/api/auth/**").permitAll()
                 .requestMatchers("/h2-console/**").permitAll()
-                .requestMatchers("/ai/**").permitAll()
+                .requestMatchers("/ai/**", "/api/ai/**").permitAll()
                 // SPA estático (front embutido no JAR em /api/*)
                 .requestMatchers(HttpMethod.GET,
                         "/",
@@ -56,7 +57,21 @@ public class SecurityConfig {
                         "/login",
                         "/register"
                 ).permitAll()
-                .requestMatchers(HttpMethod.GET, "/assets/**").permitAll()
+                // Versões com /api/ na frente (quando não há context-path ou proxy adiciona /api)
+                .requestMatchers(HttpMethod.GET,
+                        "/api",
+                        "/api/",
+                        "/api/index.html",
+                        "/api/upload",
+                        "/api/historico",
+                        "/api/clientes",
+                        "/api/login",
+                        "/api/register"
+                ).permitAll()
+                // Assets do Vite
+                .requestMatchers(HttpMethod.GET, "/assets/**", "/api/assets/**").permitAll()
+                // Listagem de clientes precisa funcionar para o dropdown
+                .requestMatchers(HttpMethod.GET, "/clientes/**", "/api/clientes/**").permitAll()
                 // Outros endpoints requerem autenticação
                 .anyRequest().authenticated()
             )
