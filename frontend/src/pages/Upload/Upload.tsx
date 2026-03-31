@@ -117,7 +117,14 @@ export default function Upload() {
     clienteService
       .listar()
       .then((lista) => setClientes(lista))
-      .catch(() => setClientes([]))
+      .catch((err: unknown) => {
+        setClientes([]);
+        const msg =
+          axios.isAxiosError(err) && err.response?.data && typeof err.response.data === 'object' && 'message' in err.response.data
+            ? String((err.response.data as { message?: unknown }).message ?? '')
+            : 'Não foi possível carregar os clientes. Verifique se o backend está acessível e tente recarregar a página.';
+        setMensagem({ texto: msg || 'Não foi possível carregar os clientes.', tipo: 'erro' });
+      })
       .finally(() => setLoadingClientes(false));
   }, []);
 
