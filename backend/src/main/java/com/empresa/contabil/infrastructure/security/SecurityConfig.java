@@ -7,6 +7,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -24,6 +25,21 @@ import java.util.Arrays;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    /**
+     * Alguns ambientes (context-path /api + proxy) podem fazer os matchers do Security
+     * não baterem como esperado e gerar 403 no dropdown de clientes.
+     * Ignorar o endpoint remove a cadeia de filtros por completo para essa rota.
+     */
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return (web) -> web.ignoring().requestMatchers(
+                "/clientes",
+                "/clientes/**",
+                "/api/clientes",
+                "/api/clientes/**"
+        );
+    }
 
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
