@@ -20,10 +20,23 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers = config.headers || {};
-    config.headers.Authorization = `Bearer ${token}`;
+  // Evita enviar Authorization em endpoints públicos.
+  // Isso previne 403 quando existe token velho/ruim no storage.
+  const url = String(config.url ?? '');
+  const isPublicClientes =
+    url === '/clientes' ||
+    url.startsWith('/clientes?') ||
+    url.startsWith('/clientes/') ||
+    url === '/api/clientes' ||
+    url.startsWith('/api/clientes?') ||
+    url.startsWith('/api/clientes/');
+
+  if (!isPublicClientes) {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers = config.headers || {};
+      config.headers.Authorization = `Bearer ${token}`;
+    }
   }
   return config;
 });
