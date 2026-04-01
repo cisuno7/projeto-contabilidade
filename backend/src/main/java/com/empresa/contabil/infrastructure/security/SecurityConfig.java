@@ -47,6 +47,10 @@ public class SecurityConfig {
                 .requestMatchers("/auth/**", "/api/auth/**").permitAll()
                 .requestMatchers("/h2-console/**").permitAll()
                 .requestMatchers("/ai/**", "/api/ai/**").permitAll()
+                // Clientes (dropdown do upload / cadastro). PermitAll sem depender de context-path.
+                // Importante: em alguns ambientes o matcher considera só o servletPath (sem /api),
+                // então liberamos as duas variantes e também sem restringir método.
+                .requestMatchers("/clientes", "/clientes/**", "/api/clientes", "/api/clientes/**").permitAll()
                 // SPA estático (front embutido no JAR em /api/*)
                 .requestMatchers(HttpMethod.GET,
                         "/",
@@ -70,8 +74,6 @@ public class SecurityConfig {
                 ).permitAll()
                 // Assets do Vite
                 .requestMatchers(HttpMethod.GET, "/assets/**", "/api/assets/**").permitAll()
-                // Listagem de clientes precisa funcionar para o dropdown
-                .requestMatchers(HttpMethod.GET, "/clientes/**", "/api/clientes/**").permitAll()
                 // Outros endpoints requerem autenticação
                 .anyRequest().authenticated()
             )
