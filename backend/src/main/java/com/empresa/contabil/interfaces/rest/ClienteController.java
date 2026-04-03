@@ -9,15 +9,17 @@ import com.empresa.contabil.interfaces.mapper.ClienteResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/clientes")
+@RequestMapping(value = "/clientes", produces = MediaType.APPLICATION_JSON_VALUE)
 @RequiredArgsConstructor
 public class ClienteController {
 
     private final ClienteUseCase clienteUseCase;
 
+    /** GET JSON — navegador com Accept text/html cai no SpaForwardController (refresh do React). */
     @GetMapping
     public List<ClienteResponse> listar(@RequestParam(required = false) String nome) {
         var clientes = nome != null && !nome.isBlank()

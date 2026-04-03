@@ -639,9 +639,31 @@ public class CorrecaoPlanilhaServiceImpl implements CorrecaoPlanilhaService {
         int melhorScore = 0;
 
         for (Map<String, String> linhaRef : linhasReferencia) {
-            String nomeRef = obterValorFlex(linhaRef, "produto", "nome", "descricao", "item");
-            String ncmRefBruto = obterValorFlex(linhaRef, "ncm sugerido", "ncm", "codigoncm");
-            String cestRefBruto = obterValorFlex(linhaRef, "cest sugerido", "cest", "codigocest");
+            // Planilhas tipo CEST_Completo_SP: DESCRIÇÃO da mercadoria; evitar usar só "ITEM" (muitas vezes é índice).
+            String nomeRef = obterValorFlex(linhaRef,
+                    "produto",
+                    "nome",
+                    "descricao",
+                    "descricao da mercadoria",
+                    "descricao mercadoria",
+                    "descricao do item",
+                    "mercadoria",
+                    "item");
+            // Cabeçalhos comuns no anexo SP: NCM/SH → normaliza "ncm sh"; também variações de cadastro.
+            String ncmRefBruto = obterValorFlex(linhaRef,
+                    "ncm sh",
+                    "ncmsh",
+                    "ncm sugerido",
+                    "codigo ncm",
+                    "cod ncm",
+                    "ncm",
+                    "codigoncm");
+            String cestRefBruto = obterValorFlex(linhaRef,
+                    "cest sugerido",
+                    "codigo cest",
+                    "cod cest",
+                    "cest",
+                    "codigocest");
             String icmsRefBruto = obterValorFlex(linhaRef,
                     "icms sugerido",
                     "aliquota icms",

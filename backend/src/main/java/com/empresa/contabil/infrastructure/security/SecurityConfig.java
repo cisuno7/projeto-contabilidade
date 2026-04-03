@@ -3,6 +3,7 @@ package com.empresa.contabil.infrastructure.security;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -11,6 +12,8 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -25,6 +28,26 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
+    /**
+     * Listagem de clientes (dropdown no upload) precisa ser pública.
+     * Cadeia separada + matcher por método GET evita 403 quando o JWT filter ou
+     * PathPattern não alinham com context-path /api no Spring Security 6.
+     */
+    @Bean
+    @Order(0)
+    public SecurityFilterChain clientesLeituraPublica(HttpSecurity http) throws Exception {
+        OrRequestMatcher apenasGetClientes = new OrRequestMatcher(
+                new AntPathRequestMatcher("/clientes", "GET"),
+                new AntPathRequestMatcher("/clientes/**", "GET")
+        );
+        http.securityMatcher(apenasGetClientes)
+                .csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+        return http.build();
+    }
+
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -36,44 +59,35 @@ public class SecurityConfig {
     }
 
     @Bean
+    @Order(1)
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                // Endpoints públicos
-                // Suporta com/sem context-path (/api) dependendo do ambiente (Render vs embedded)
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/auth/**", "/api/auth/**").permitAll()
                 .requestMatchers("/h2-console/**").permitAll()
                 .requestMatchers("/ai/**", "/api/ai/**").permitAll()
-                // Clientes (dropdown do upload / cadastro).
-                // Como o app roda com context-path '/api', o Spring Security enxerga o caminho como '/clientes/**'.
-                .requestMatchers("/clientes", "/clientes/**").permitAll()
-                // SPA estático (front embutido no JAR em /api/*)
                 .requestMatchers(HttpMethod.GET,
                         "/",
                         "/index.html",
                         "/upload",
                         "/historico",
-                        "/clientes",
                         "/login",
                         "/register"
                 ).permitAll()
-                // Versões com /api/ na frente (quando não há context-path ou proxy adiciona /api)
                 .requestMatchers(HttpMethod.GET,
                         "/api",
                         "/api/",
                         "/api/index.html",
                         "/api/upload",
                         "/api/historico",
-                        "/api/clientes",
                         "/api/login",
                         "/api/register"
                 ).permitAll()
-                // Assets do Vite
                 .requestMatchers(HttpMethod.GET, "/assets/**", "/api/assets/**").permitAll()
-                // Outros endpoints requerem autenticação
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
