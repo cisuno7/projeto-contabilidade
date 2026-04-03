@@ -17,7 +17,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.Normalizer;
+import java.util.Locale;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -118,6 +121,7 @@ public class CorrecaoPlanilhaServiceImpl implements CorrecaoPlanilhaService {
 
         List<String> ncmCorrigidos = new ArrayList<>();
         List<String> cestCorrigidos = new ArrayList<>();
+        List<String> icmsCorrigidos = new ArrayList<>();
         int correcoesViaReferencia = 0;
 
         Map<String, Object> dados = interpretadorPlanilhaService.extrairDadosEstruturados(planilha);
@@ -217,6 +221,36 @@ public class CorrecaoPlanilhaServiceImpl implements CorrecaoPlanilhaService {
                             acao.put("criterio", "PLANILHA_REFERENCIA_IA");
                             acao.put("referencia_nome", ref.nomeReferencia());
                             acoes.add(acao);
+                            correcoesViaReferencia++;
+                        }
+                    }
+
+                    Campo campoIcms = obterCampo(
+                            camposLinha,
+                            "ICMS",
+                            "ALIQUOTAICMS",
+                            "ALIQUOTA_ICMS",
+                            "ALIQ_ICMS",
+                            "PERC_ICMS",
+                            "P_ICMS",
+                            "PERCENTUALICMS",
+                            "PERCENTUAL_ICMS"
+                    );
+                    if (campoIcms != null && ref.icmsDisplay() != null && !ref.icmsDisplay().isBlank()) {
+                        String antesIcms = campoIcms.getValor();
+                        boolean icmsVazio = antesIcms == null || antesIcms.isBlank();
+                        if (icmsVazio || !valoresIcmsEquivalentes(antesIcms, ref.icmsDisplay())) {
+                            campoIcms.setValor(ref.icmsDisplay());
+                            icmsCorrigidos.add(nome + ": " + (icmsVazio ? "—" : antesIcms) + " → " + ref.icmsDisplay());
+
+                            Map<String, Object> acaoIcms = new LinkedHashMap<>();
+                            acaoIcms.put("campo", campoIcms.getNome() != null ? campoIcms.getNome() : "ICMS");
+                            acaoIcms.put("antes", antesIcms);
+                            acaoIcms.put("depois", ref.icmsDisplay());
+                            acaoIcms.put("tipo", icmsVazio ? "PREENCHIMENTO_PLANILHA_REFERENCIA" : "CORRECAO_PLANILHA_REFERENCIA");
+                            acaoIcms.put("criterio", "PLANILHA_REFERENCIA_SIMILARIDADE");
+                            acaoIcms.put("referencia_nome", ref.nomeReferencia());
+                            acoes.add(acaoIcms);
                             correcoesViaReferencia++;
                         }
                     }
@@ -433,8 +467,8 @@ public class CorrecaoPlanilhaServiceImpl implements CorrecaoPlanilhaService {
         try {
 
             StringBuilder resumo = new StringBuilder();
-            if (!cestCorrigidos.isEmpty() || !ncmCorrigidos.isEmpty()) {
-                resumo.append("CEST e NCM ajustados\n\n");
+            if (!cestCorrigidos.isEmpty() || !ncmCorrigidos.isEmpty() || !icmsCorrigidos.isEmpty()) {
+                resumo.append("NCM, CEST e/ou ICMS ajustados\n\n");
                 if (!cestCorrigidos.isEmpty()) {
                     resumo.append("CEST corrigidos:\n\n");
                     cestCorrigidos.forEach(c -> resumo.append(c).append("\n"));
@@ -445,8 +479,13 @@ public class CorrecaoPlanilhaServiceImpl implements CorrecaoPlanilhaService {
                     ncmCorrigidos.forEach(n -> resumo.append(n).append("\n"));
                     resumo.append("\n");
                 }
+                if (!icmsCorrigidos.isEmpty()) {
+                    resumo.append("ICMS / alíquota corrigidos (planilha de referência):\n\n");
+                    icmsCorrigidos.forEach(i -> resumo.append(i).append("\n"));
+                    resumo.append("\n");
+                }
             } else {
-                resumo.append("Nenhum campo NCM/CEST alterado automaticamente nesta execução.\n\n");
+                resumo.append("Nenhum campo NCM/CEST/ICMS alterado automaticamente nesta execução.\n\n");
             }
 
             if (!pendentes.isEmpty()) {
@@ -603,6 +642,19 @@ public class CorrecaoPlanilhaServiceImpl implements CorrecaoPlanilhaService {
             String nomeRef = obterValorFlex(linhaRef, "produto", "nome", "descricao", "item");
             String ncmRefBruto = obterValorFlex(linhaRef, "ncm sugerido", "ncm", "codigoncm");
             String cestRefBruto = obterValorFlex(linhaRef, "cest sugerido", "cest", "codigocest");
+            String icmsRefBruto = obterValorFlex(linhaRef,
+                    "icms sugerido",
+                    "aliquota icms",
+                    "alíquota icms",
+                    "perc icms",
+                    "percentual icms",
+                    "% icms",
+                    "p icms",
+                    "icms venda",
+                    "venda icms",
+                    "icms",
+                    "aliquota",
+                    "alíquota");
             String grupoRef = obterValorFlex(linhaRef, "grupo sugerido", "grupo");
 
             String ncm8 = normalizarNcm8(ncmRefBruto);
@@ -619,9 +671,10 @@ public class CorrecaoPlanilhaServiceImpl implements CorrecaoPlanilhaService {
             }
 
             String cest7 = normalizarCest7(cestRefBruto);
+            String icmsDisplay = formatarIcmsDaReferencia(icmsRefBruto);
             if (score > melhorScore) {
                 melhorScore = score;
-                melhor = new ReferenciaMatch(nomeRef, ncm8, cest7, score);
+                melhor = new ReferenciaMatch(nomeRef, ncm8, cest7, icmsDisplay, score);
             }
         }
 
@@ -658,7 +711,71 @@ public class CorrecaoPlanilhaServiceImpl implements CorrecaoPlanilhaService {
         return digits.length() == 7 ? digits : null;
     }
 
-    private record ReferenciaMatch(String nomeReferencia, String ncm8, String cest7, int score) {}
+    private record ReferenciaMatch(String nomeReferencia, String ncm8, String cest7, String icmsDisplay, int score) {}
+
+    /**
+     * Normaliza texto da planilha de referência para alíquota ICMS (%).
+     * Aceita "18", "18,5", "18.5", "0,18" (interpretado como 18% quando entre 0 e 1 exclusivo).
+     */
+    private static String formatarIcmsDaReferencia(String bruto) {
+        if (bruto == null || bruto.isBlank()) {
+            return null;
+        }
+        String s = bruto.trim()
+                .replace('\u00a0', ' ')
+                .replace("%", "")
+                .replaceAll("\\s+", "");
+        if (s.isBlank()) {
+            return null;
+        }
+        s = s.replace(',', '.');
+        try {
+            BigDecimal v = new BigDecimal(s);
+            if (v.compareTo(BigDecimal.ZERO) > 0 && v.compareTo(BigDecimal.ONE) <= 0) {
+                v = v.multiply(new BigDecimal("100"));
+            }
+            v = v.setScale(4, RoundingMode.HALF_UP).stripTrailingZeros();
+            String plain = v.toPlainString();
+            return plain.replace('.', ',');
+        } catch (NumberFormatException e) {
+            return bruto.trim();
+        }
+    }
+
+    private static boolean valoresIcmsEquivalentes(String a, String b) {
+        if (a == null || b == null) {
+            return false;
+        }
+        BigDecimal na = parseIcmsParaComparacao(a);
+        BigDecimal nb = parseIcmsParaComparacao(b);
+        if (na != null && nb != null) {
+            return na.compareTo(nb) == 0;
+        }
+        return normalizarTextoIcms(a).equals(normalizarTextoIcms(b));
+    }
+
+    private static String normalizarTextoIcms(String s) {
+        if (s == null) {
+            return "";
+        }
+        return s.trim().replace("%", "").replace(" ", "").replace(',', '.').toLowerCase(Locale.ROOT);
+    }
+
+    private static BigDecimal parseIcmsParaComparacao(String s) {
+        if (s == null || s.isBlank()) {
+            return null;
+        }
+        String t = s.trim().replace("%", "").replace(" ", "").replace(',', '.');
+        try {
+            BigDecimal v = new BigDecimal(t);
+            if (v.compareTo(BigDecimal.ZERO) > 0 && v.compareTo(BigDecimal.ONE) <= 0) {
+                v = v.multiply(new BigDecimal("100"));
+            }
+            return v.setScale(4, RoundingMode.HALF_UP);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
 
     private List<Map<String, Object>> montarCandidatosProduto(String nome, String grupo) {
         if (nome == null || nome.isBlank()) {
