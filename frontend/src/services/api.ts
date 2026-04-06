@@ -20,18 +20,19 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-  // Evita enviar Authorization em endpoints públicos.
-  // Isso previne 403 quando existe token velho/ruim no storage.
+  // Só o GET /clientes (lista para o dropdown) é público. POST /clientes (cadastro) precisa do Bearer.
+  const method = String(config.method ?? 'get').toLowerCase();
   const url = String(config.url ?? '');
-  const isPublicClientes =
-    url === '/clientes' ||
-    url.startsWith('/clientes?') ||
-    url.startsWith('/clientes/') ||
-    url === '/api/clientes' ||
-    url.startsWith('/api/clientes?') ||
-    url.startsWith('/api/clientes/');
+  const isPublicClientesGet =
+    method === 'get' &&
+    (url === '/clientes' ||
+      url.startsWith('/clientes?') ||
+      url.startsWith('/clientes/') ||
+      url === '/api/clientes' ||
+      url.startsWith('/api/clientes?') ||
+      url.startsWith('/api/clientes/'));
 
-  if (!isPublicClientes) {
+  if (!isPublicClientesGet) {
     const token = localStorage.getItem('token');
     if (token) {
       config.headers = config.headers || {};
