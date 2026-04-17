@@ -48,7 +48,7 @@ export const planilhaService = {
     clienteId: string,
     nomeArquivo?: string,
     corrigirComIA: boolean = true,
-    arquivoReferencia?: File | null,
+    ufConferencia?: string | null,
   ): Promise<Planilha> => {
     const formData = new FormData();
     formData.append('arquivo', arquivo);
@@ -57,19 +57,24 @@ export const planilhaService = {
       formData.append('nomeArquivo', nomeArquivo);
     }
     formData.append('corrigirComIA', String(corrigirComIA));
-    if (arquivoReferencia) {
-      formData.append('arquivoReferencia', arquivoReferencia);
+    if (corrigirComIA && ufConferencia && ufConferencia.trim()) {
+      formData.append('ufConferencia', ufConferencia.trim().toUpperCase());
     }
 
     const response = await api.post<Planilha>('/planilhas/upload', formData);
     return response.data;
   },
 
-  processar: async (planilhaId: string, usarIA: boolean = true): Promise<Planilha> => {
-    const response = await api.post<Planilha>('/planilhas/processar', {
-      planilhaId,
-      usarIA,
-    });
+  processar: async (
+    planilhaId: string,
+    usarIA: boolean = true,
+    ufConferencia?: string | null,
+  ): Promise<Planilha> => {
+    const body: Record<string, unknown> = { planilhaId, usarIA };
+    if (usarIA && ufConferencia && ufConferencia.trim()) {
+      body.ufConferencia = ufConferencia.trim().toUpperCase();
+    }
+    const response = await api.post<Planilha>('/planilhas/processar', body);
     return response.data;
   },
 

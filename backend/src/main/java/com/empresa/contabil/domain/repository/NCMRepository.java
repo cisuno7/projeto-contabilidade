@@ -15,6 +15,9 @@ import com.empresa.contabil.domain.model.NCM;
 public interface NCMRepository extends JpaRepository<NCM, UUID> {
     Optional<NCM> findByCodigo(String codigo);
 
+    @Query("SELECT n FROM NCM n WHERE n.codigo = :codigo AND UPPER(TRIM(n.uf)) = UPPER(TRIM(:uf))")
+    Optional<NCM> findByCodigoAndUf(@Param("codigo") String codigo, @Param("uf") String uf);
+
     boolean existsByCodigo(String codigo);
     @Query("""
         SELECT n FROM NCM n

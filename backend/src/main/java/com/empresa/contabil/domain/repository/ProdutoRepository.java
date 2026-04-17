@@ -28,4 +28,20 @@ public interface ProdutoRepository extends JpaRepository<Produto, UUID> {
             "LOWER(p.nome) LIKE LOWER(CONCAT('%', :termo, '%')) " +
             "OR LOWER(:termo) LIKE LOWER(CONCAT('%', p.nome, '%'))")
     List<Produto> buscarPorNomeContendo(@Param("termo") String termo);
+
+    /**
+     * Produtos da UF da conferência: {@code produto.uf} deve coincidir (quando preenchido);
+     * se for nulo (carga antiga), exige apenas NCM/CEST da mesma UF.
+     */
+    @Query("""
+            SELECT DISTINCT p FROM Produto p
+            JOIN p.ncm n
+            LEFT JOIN p.cest c
+            WHERE (p.uf IS NULL OR UPPER(TRIM(p.uf)) = UPPER(TRIM(:uf)))
+            AND UPPER(TRIM(n.uf)) = UPPER(TRIM(:uf))
+            AND (c IS NULL OR UPPER(TRIM(c.uf)) = UPPER(TRIM(:uf)))
+            AND (LOWER(p.nome) LIKE LOWER(CONCAT('%', :termo, '%'))
+                 OR LOWER(:termo) LIKE LOWER(CONCAT('%', p.nome, '%')))
+            """)
+    List<Produto> buscarPorNomeContendoAndUf(@Param("termo") String termo, @Param("uf") String uf);
 }

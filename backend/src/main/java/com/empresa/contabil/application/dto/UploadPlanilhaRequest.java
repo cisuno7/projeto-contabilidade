@@ -19,4 +19,7 @@ public class UploadPlanilhaRequest {
      * (focado em NCM/CEST para SP + Simples Nacional).
      */
     private Boolean corrigirComIA;
+
+    /** UF da base fiscal no banco (ex.: ES). Usado quando {@code corrigirComIA} é true. */
+    private String ufConferencia;
 }

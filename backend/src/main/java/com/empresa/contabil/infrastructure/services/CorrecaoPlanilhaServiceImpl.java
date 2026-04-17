@@ -105,24 +105,24 @@ public class CorrecaoPlanilhaServiceImpl implements CorrecaoPlanilhaService {
 
     @Override
     public Planilha corrigirNcmECest(Planilha planilha) {
-        return corrigirNcmECest(planilha, null, null);
+        return corrigirNcmECest(planilha, null);
     }
 
     @Override
-    public Planilha corrigirNcmECest(
-            Planilha planilha,
-            List<Map<String, String>> linhasReferencia,
-            String nomeArquivoReferencia
-    ) {
+    public Planilha corrigirNcmECest(Planilha planilha, String ufConferencia) {
 
         if (planilha == null) return null;
 
-        log.info("Iniciando correção de NCM/CEST para planilha {}", planilha.getId());
+        final String ufRef = ufConferencia != null && !ufConferencia.isBlank()
+                ? ufConferencia.trim().toUpperCase(Locale.ROOT)
+                : null;
+
+        log.info("Iniciando correção de NCM/CEST para planilha {} (UF conferência: {})", planilha.getId(), ufRef);
 
         List<String> ncmCorrigidos = new ArrayList<>();
         List<String> cestCorrigidos = new ArrayList<>();
         List<String> icmsCorrigidos = new ArrayList<>();
-        int correcoesViaReferencia = 0;
+        int correcoesViaFontePrioritaria = 0;
 
         Map<String, Object> dados = interpretadorPlanilhaService.extrairDadosEstruturados(planilha);
 
@@ -165,22 +165,21 @@ public class CorrecaoPlanilhaServiceImpl implements CorrecaoPlanilhaService {
             Optional<NCM> ncmOpt = Optional.empty();
 
             if (ncm != null && !ncm.isBlank()) {
-                ncmOpt = ncmRepository.findByCodigo(ncm);
+                ncmOpt = resolverNcmPorCodigoPlanilha(ncm, ufRef);
             }
 
             boolean resolucaoCompletaViaReferencia = false;
-            if (nome != null && !nome.isBlank()
-                    && linhasReferencia != null && !linhasReferencia.isEmpty()) {
+            if (nome != null && !nome.isBlank() && ufRef != null) {
 
-                Optional<ReferenciaMatch> refMatchOpt =
-                        buscarEmPlanilhaReferencia(nome, grupo, linhasReferencia);
+                Optional<ReferenciaMatch> refMatchOpt = buscarCorrespondenciaBanco(nome, grupo, ufRef);
 
                 if (refMatchOpt.isPresent()) {
                     ReferenciaMatch ref = refMatchOpt.get();
-                    Optional<NCM> ncmRef = ncmRepository.findByCodigo(ref.ncm8());
-                    Optional<CEST> cestRef = ref.cest7() != null
-                            ? cestRepository.findByCodigo(ref.cest7())
-                            : Optional.empty();
+                    Optional<NCM> ncmRef = resolverNcmPorCodigoPlanilha(ref.ncm8(), ufRef);
+                    Optional<CEST> cestRef = Optional.empty();
+                    if (ref.cest7() != null && ncmRef.isPresent()) {
+                        cestRef = resolverCestPorCodigo(ref.cest7(), ncmRef.get(), ufRef);
+                    }
 
                     if (ncmRef.isPresent()) {
                         if (campoNcm != null) {
@@ -194,11 +193,11 @@ public class CorrecaoPlanilhaServiceImpl implements CorrecaoPlanilhaService {
                             acao.put("campo", "CODIGONCM");
                             acao.put("antes", antes);
                             acao.put("depois", ncmFormatado);
-                            acao.put("tipo", vazio ? "PREENCHIMENTO_PLANILHA_REFERENCIA" : "CORRECAO_PLANILHA_REFERENCIA");
-                            acao.put("criterio", "PLANILHA_REFERENCIA_IA");
-                            acao.put("referencia_nome", ref.nomeReferencia());
+                            acao.put("tipo", vazio ? "PREENCHIMENTO_BANCO_UF" : "CORRECAO_BANCO_UF");
+                            acao.put("criterio", "BANCO_PRODUTO_UF");
+                            acao.put("referencia_nome", ref.nomeReferencia() + " (UF " + ufRef + ")");
                             acoes.add(acao);
-                            correcoesViaReferencia++;
+                            correcoesViaFontePrioritaria++;
                         }
                         ncmOpt = ncmRef;
                         ncm = ncmRef.get().getCodigo();
@@ -217,64 +216,79 @@ public class CorrecaoPlanilhaServiceImpl implements CorrecaoPlanilhaService {
                             acao.put("campo", "CEST");
                             acao.put("antes", antes);
                             acao.put("depois", cestFmt);
-                            acao.put("tipo", vazio ? "PREENCHIMENTO_PLANILHA_REFERENCIA" : "CORRECAO_PLANILHA_REFERENCIA");
-                            acao.put("criterio", "PLANILHA_REFERENCIA_IA");
-                            acao.put("referencia_nome", ref.nomeReferencia());
+                            acao.put("tipo", vazio ? "PREENCHIMENTO_BANCO_UF" : "CORRECAO_BANCO_UF");
+                            acao.put("criterio", "BANCO_PRODUTO_UF");
+                            acao.put("referencia_nome", ref.nomeReferencia() + " (UF " + ufRef + ")");
                             acoes.add(acao);
-                            correcoesViaReferencia++;
+                            correcoesViaFontePrioritaria++;
                         }
                     }
 
-                    Campo campoIcms = obterCampo(
-                            camposLinha,
-                            "ICMS",
-                            "ALIQUOTAICMS",
-                            "ALIQUOTA_ICMS",
-                            "ALIQ_ICMS",
-                            "PERC_ICMS",
-                            "P_ICMS",
-                            "PERCENTUALICMS",
-                            "PERCENTUAL_ICMS"
-                    );
-                    if (campoIcms != null && ref.icmsDisplay() != null && !ref.icmsDisplay().isBlank()) {
-                        String antesIcms = campoIcms.getValor();
-                        boolean icmsVazio = antesIcms == null || antesIcms.isBlank();
-                        if (icmsVazio || !valoresIcmsEquivalentes(antesIcms, ref.icmsDisplay())) {
-                            campoIcms.setValor(ref.icmsDisplay());
-                            icmsCorrigidos.add(nome + ": " + (icmsVazio ? "—" : antesIcms) + " → " + ref.icmsDisplay());
+                    if (ref.icmsDisplay() != null && !ref.icmsDisplay().isBlank()) {
+                        Campo campoIcms = obterCampo(
+                                camposLinha,
+                                "ICMS",
+                                "ALIQUOTAICMS",
+                                "ALIQUOTA_ICMS",
+                                "ALIQ_ICMS",
+                                "PERC_ICMS",
+                                "P_ICMS",
+                                "PERCENTUALICMS",
+                                "PERCENTUAL_ICMS"
+                        );
+                        if (campoIcms != null) {
+                            String antesIcms = campoIcms.getValor();
+                            boolean icmsVazio = antesIcms == null || antesIcms.isBlank();
+                            if (icmsVazio || !valoresIcmsEquivalentes(antesIcms, ref.icmsDisplay())) {
+                                campoIcms.setValor(ref.icmsDisplay());
+                                icmsCorrigidos.add(nome + ": " + (icmsVazio ? "—" : antesIcms) + " → " + ref.icmsDisplay());
 
-                            Map<String, Object> acaoIcms = new LinkedHashMap<>();
-                            acaoIcms.put("campo", campoIcms.getNome() != null ? campoIcms.getNome() : "ICMS");
-                            acaoIcms.put("antes", antesIcms);
-                            acaoIcms.put("depois", ref.icmsDisplay());
-                            acaoIcms.put("tipo", icmsVazio ? "PREENCHIMENTO_PLANILHA_REFERENCIA" : "CORRECAO_PLANILHA_REFERENCIA");
-                            acaoIcms.put("criterio", "PLANILHA_REFERENCIA_SIMILARIDADE");
-                            acaoIcms.put("referencia_nome", ref.nomeReferencia());
-                            acoes.add(acaoIcms);
-                            correcoesViaReferencia++;
+                                Map<String, Object> acaoIcms = new LinkedHashMap<>();
+                                acaoIcms.put("campo", campoIcms.getNome() != null ? campoIcms.getNome() : "ICMS");
+                                acaoIcms.put("antes", antesIcms);
+                                acaoIcms.put("depois", ref.icmsDisplay());
+                                acaoIcms.put("tipo", icmsVazio ? "PREENCHIMENTO_BANCO_UF" : "CORRECAO_BANCO_UF");
+                                acaoIcms.put("criterio", "BANCO_PRODUTO_UF");
+                                acaoIcms.put("referencia_nome", ref.nomeReferencia() + " (UF " + ufRef + ")");
+                                acoes.add(acaoIcms);
+                                correcoesViaFontePrioritaria++;
+                            }
                         }
                     }
 
+                    Campo campoCestRes = obterCampo(camposLinha, "CEST", "CODIGOCEST");
                     boolean ncmResolvido = campoNcm == null
                             || (campoNcm.getValor() != null && !campoNcm.getValor().isBlank());
-                    boolean cestResolvido = campoCest == null
-                            || (campoCest.getValor() != null && !campoCest.getValor().isBlank());
+                    boolean cestResolvido = campoCestRes == null
+                            || (campoCestRes.getValor() != null && !campoCestRes.getValor().isBlank());
                     resolucaoCompletaViaReferencia = ncmResolvido && cestResolvido;
                 }
             }
 
             if (!resolucaoCompletaViaReferencia && ncmOpt.isEmpty() && nome != null && !nome.isBlank()) {
 
-                Optional<Produto> produtoMatch = buscarProdutoComClassificacao(nome, grupo);
+                Optional<Produto> produtoMatch = buscarProdutoComClassificacao(nome, grupo, ufRef);
                 if (produtoMatch.isPresent()) {
                     Produto p = produtoMatch.get();
                     String criterioProduto = inferirCriterioProduto(nome, p.getNome());
-                    String ncmProd = normalizar(p.getCodigoNcmInformado());
-                    String cestProd = normalizar(p.getCodigoCestInformado());
-                    Optional<NCM> ncmFromProd = ncmProd != null && !ncmProd.isBlank()
-                            ? ncmRepository.findByCodigo(ncmProd) : Optional.empty();
-                    Optional<CEST> cestFromProd = cestProd != null && cestProd.length() == 7
-                            ? cestRepository.findByCodigo(cestProd) : Optional.empty();
+                    Optional<NCM> ncmFromProd;
+                    if (p.getNcm() != null) {
+                        ncmFromProd = Optional.of(p.getNcm());
+                    } else {
+                        String ncmProd = normalizar(p.getCodigoNcmInformado());
+                        ncmFromProd = (ncmProd != null && !ncmProd.isBlank())
+                                ? resolverNcmPorCodigoPlanilha(ncmProd, ufRef)
+                                : Optional.empty();
+                    }
+                    Optional<CEST> cestFromProd = Optional.empty();
+                    if (p.getCest() != null) {
+                        cestFromProd = Optional.of(p.getCest());
+                    } else if (ncmFromProd.isPresent() && p.getCodigoCestInformado() != null) {
+                        String c7 = normalizarCest7(p.getCodigoCestInformado());
+                        if (c7 != null) {
+                            cestFromProd = resolverCestPorCodigo(c7, ncmFromProd.get(), ufRef);
+                        }
+                    }
 
                     if (ncmFromProd.isPresent() && cestFromProd.isPresent()) {
 
@@ -360,7 +374,7 @@ public class CorrecaoPlanilhaServiceImpl implements CorrecaoPlanilhaService {
                     if (sugestaoIA != null && !sugestaoIA.isBlank()) {
 
                         Optional<NCM> ncmIA =
-                                ncmRepository.findByCodigo(normalizar(sugestaoIA));
+                                resolverNcmPorCodigoPlanilha(normalizar(sugestaoIA), ufRef);
 
                         if (ncmIA.isPresent()) {
 
@@ -394,8 +408,9 @@ public class CorrecaoPlanilhaServiceImpl implements CorrecaoPlanilhaService {
 
             if (ncmOpt.isPresent() && !resolucaoCompletaViaReferencia) {
                 // Buscar CESTs pelo NCM vinculado no banco (não pelo código do CEST)
-                List<CEST> cestsOficiais =
-                        cestRepository.findAllByNcm(ncmOpt.get());
+                List<CEST> cestsOficiais = ufRef != null
+                        ? cestRepository.findAllByNcmAndUf(ncmOpt.get(), ufRef)
+                        : cestRepository.findAllByNcm(ncmOpt.get());
 
                 if (!cestsOficiais.isEmpty()) {
 
@@ -458,7 +473,7 @@ public class CorrecaoPlanilhaServiceImpl implements CorrecaoPlanilhaService {
         }
 
         List<Map<String, Object>> pendentes =
-                montarRelatorioPendentes(linhas, camposPorLinha);
+                montarRelatorioPendentes(linhas, camposPorLinha, ufRef);
 
         if (aiService.isDisponivel() && !pendentes.isEmpty()) {
             aiService.enrichirAnaliseCorrelacaoIA(pendentes);
@@ -480,7 +495,7 @@ public class CorrecaoPlanilhaServiceImpl implements CorrecaoPlanilhaService {
                     resumo.append("\n");
                 }
                 if (!icmsCorrigidos.isEmpty()) {
-                    resumo.append("ICMS / alíquota corrigidos (planilha de referência):\n\n");
+                    resumo.append("ICMS / alíquota corrigidos (fonte prioritaria / banco UF):\n\n");
                     icmsCorrigidos.forEach(i -> resumo.append(i).append("\n"));
                     resumo.append("\n");
                 }
@@ -498,12 +513,8 @@ public class CorrecaoPlanilhaServiceImpl implements CorrecaoPlanilhaService {
             relatorioCorrelacao.put("totalLinhas", totalLinhas);
             relatorioCorrelacao.put("linhasComAlteracao", metadadosLinhas.size());
             relatorioCorrelacao.put("linhasPendentes", pendentes.size());
-            relatorioCorrelacao.put("correcoesViaPlanilhaReferencia", correcoesViaReferencia);
-            relatorioCorrelacao.put("arquivoReferencia", nomeArquivoReferencia);
-            relatorioCorrelacao.put(
-                    "linhasReferenciaAnalisadas",
-                    linhasReferencia != null ? linhasReferencia.size() : 0
-            );
+            relatorioCorrelacao.put("correcoesViaFontePrioritaria", correcoesViaFontePrioritaria);
+            relatorioCorrelacao.put("ufConferencia", ufRef);
             relatorioCorrelacao.put(
                     "nota",
                     "Os nomes reproduzem o que o cliente informou. Use as correlações para decidir inclusões na tabela produto ou ajustes no cadastro fiscal, sem mudar a planilha."
@@ -541,7 +552,8 @@ public class CorrecaoPlanilhaServiceImpl implements CorrecaoPlanilhaService {
      */
     private List<Map<String, Object>> montarRelatorioPendentes(
             List<Map<String, String>> linhas,
-            Map<Integer, Map<String, Campo>> camposPorLinha) {
+            Map<Integer, Map<String, Campo>> camposPorLinha,
+            String ufRef) {
 
         List<Map<String, Object>> pendentes = new ArrayList<>();
 
@@ -579,7 +591,7 @@ public class CorrecaoPlanilhaServiceImpl implements CorrecaoPlanilhaService {
             item.put("falta_ncm", faltaNcm);
             item.put("falta_cest", faltaCest);
 
-            item.put("candidatos_produto", montarCandidatosProduto(nome, grupo));
+            item.put("candidatos_produto", montarCandidatosProduto(nome, grupo, ufRef));
 
             if (faltaNcm && nome != null && !nome.isBlank()) {
                 List<NCM> ncms = ncmRepository.buscarPorDescricaoAproximada(nome);
@@ -595,15 +607,17 @@ public class CorrecaoPlanilhaServiceImpl implements CorrecaoPlanilhaService {
 
             if (faltaCest && !faltaNcm) {
                 String codigoBusca = normalizar(ncmVal);
-                Optional<NCM> ncmR = ncmRepository.findByCodigo(codigoBusca);
+                Optional<NCM> ncmR = resolverNcmPorCodigoPlanilha(codigoBusca, ufRef);
                 if (ncmR.isEmpty() && codigoBusca != null) {
                     String d = codigoBusca.replaceAll("\\D", "");
                     if (d.length() >= 8) {
-                        ncmR = ncmRepository.findByCodigo(d.substring(0, 8));
+                        ncmR = resolverNcmPorCodigoPlanilha(d.substring(0, 8), ufRef);
                     }
                 }
                 if (ncmR.isPresent()) {
-                    List<CEST> lista = cestRepository.findAllByNcm(ncmR.get());
+                    List<CEST> lista = ufRef != null
+                            ? cestRepository.findAllByNcmAndUf(ncmR.get(), ufRef)
+                            : cestRepository.findAllByNcm(ncmR.get());
                     List<Map<String, Object>> op = new ArrayList<>();
                     for (CEST c : lista.stream().limit(10).toList()) {
                         Map<String, Object> m = new LinkedHashMap<>();
@@ -626,95 +640,47 @@ public class CorrecaoPlanilhaServiceImpl implements CorrecaoPlanilhaService {
         return pendentes;
     }
 
-    private Optional<ReferenciaMatch> buscarEmPlanilhaReferencia(
-            String nome,
-            String grupo,
-            List<Map<String, String>> linhasReferencia
-    ) {
-        if (nome == null || nome.isBlank() || linhasReferencia == null || linhasReferencia.isEmpty()) {
+    private Optional<NCM> resolverNcmPorCodigoPlanilha(String codigoBruto, String ufRef) {
+        if (codigoBruto == null || codigoBruto.isBlank()) {
             return Optional.empty();
         }
-
-        ReferenciaMatch melhor = null;
-        int melhorScore = 0;
-
-        for (Map<String, String> linhaRef : linhasReferencia) {
-            // Planilhas tipo CEST_Completo_SP: DESCRIÇÃO da mercadoria; evitar usar só "ITEM" (muitas vezes é índice).
-            String nomeRef = obterValorFlex(linhaRef,
-                    "produto",
-                    "nome",
-                    "descricao",
-                    "descricao da mercadoria",
-                    "descricao mercadoria",
-                    "descricao do item",
-                    "mercadoria",
-                    "item");
-            // Cabeçalhos comuns no anexo SP: NCM/SH → normaliza "ncm sh"; também variações de cadastro.
-            String ncmRefBruto = obterValorFlex(linhaRef,
-                    "ncm sh",
-                    "ncmsh",
-                    "ncm sugerido",
-                    "codigo ncm",
-                    "cod ncm",
-                    "ncm",
-                    "codigoncm");
-            String cestRefBruto = obterValorFlex(linhaRef,
-                    "cest sugerido",
-                    "codigo cest",
-                    "cod cest",
-                    "cest",
-                    "codigocest");
-            String icmsRefBruto = obterValorFlex(linhaRef,
-                    "icms sugerido",
-                    "aliquota icms",
-                    "alíquota icms",
-                    "perc icms",
-                    "percentual icms",
-                    "% icms",
-                    "p icms",
-                    "icms venda",
-                    "venda icms",
-                    "icms",
-                    "aliquota",
-                    "alíquota");
-            String grupoRef = obterValorFlex(linhaRef, "grupo sugerido", "grupo");
-
-            String ncm8 = normalizarNcm8(ncmRefBruto);
-            if (nomeRef == null || nomeRef.isBlank() || ncm8 == null) {
-                continue;
-            }
-
-            int score = pontuarSimilaridadeProduto(nome, nomeRef);
-            if (grupo != null && !grupo.isBlank() && grupoRef != null && grupo.equalsIgnoreCase(grupoRef)) {
-                score += 2;
-            }
-            if (score < 2) {
-                continue;
-            }
-
-            String cest7 = normalizarCest7(cestRefBruto);
-            String icmsDisplay = formatarIcmsDaReferencia(icmsRefBruto);
-            if (score > melhorScore) {
-                melhorScore = score;
-                melhor = new ReferenciaMatch(nomeRef, ncm8, cest7, icmsDisplay, score);
-            }
+        String n8 = normalizarNcm8(normalizar(codigoBruto));
+        if (n8 == null) {
+            return Optional.empty();
         }
-
-        return Optional.ofNullable(melhor);
+        if (ufRef != null && !ufRef.isBlank()) {
+            return ncmRepository.findByCodigoAndUf(n8, ufRef).or(() -> ncmRepository.findByCodigo(n8));
+        }
+        return ncmRepository.findByCodigo(n8);
     }
 
-    private String obterValorFlex(Map<String, String> linha, String... chaves) {
-        if (linha == null || linha.isEmpty()) return null;
-        for (String chave : chaves) {
-            String alvo = normalizarTexto(chave);
-            for (Map.Entry<String, String> entry : linha.entrySet()) {
-                if (normalizarTexto(entry.getKey()).equals(alvo)) {
-                    String v = entry.getValue();
-                    if (v != null && !v.isBlank()) return v.trim();
-                }
-            }
+    private Optional<CEST> resolverCestPorCodigo(String cest7Digitos, NCM ncm, String ufRef) {
+        if (cest7Digitos == null || cest7Digitos.isBlank() || ncm == null) {
+            return Optional.empty();
         }
-        return null;
+        if (ufRef != null && !ufRef.isBlank()) {
+            return cestRepository.findByCodigoAndNcmAndUf(cest7Digitos, ncm, ufRef)
+                    .or(() -> cestRepository.findByCodigoAndNcm(cest7Digitos, ncm));
+        }
+        return cestRepository.findByCodigoAndNcm(cest7Digitos, ncm);
+    }
+
+    private Optional<ReferenciaMatch> buscarCorrespondenciaBanco(String nome, String grupo, String uf) {
+        Optional<Produto> pOpt = buscarProdutoComClassificacao(nome, grupo, uf);
+        if (pOpt.isEmpty()) {
+            return Optional.empty();
+        }
+        Produto p = pOpt.get();
+        if (p.getNcm() == null) {
+            return Optional.empty();
+        }
+        String ncm8 = normalizarNcm8(p.getNcm().getCodigo());
+        if (ncm8 == null) {
+            return Optional.empty();
+        }
+        String cest7 = p.getCest() != null ? normalizarCest7(p.getCest().getCodigo()) : null;
+        int score = pontuarSimilaridadeProduto(nome, p.getNome());
+        return Optional.of(new ReferenciaMatch(p.getNome(), ncm8, cest7, null, score));
     }
 
     private String normalizarNcm8(String valor) {
@@ -799,15 +765,26 @@ public class CorrecaoPlanilhaServiceImpl implements CorrecaoPlanilhaService {
         }
     }
 
-    private List<Map<String, Object>> montarCandidatosProduto(String nome, String grupo) {
+    private List<Map<String, Object>> montarCandidatosProduto(String nome, String grupo, String ufRef) {
         if (nome == null || nome.isBlank()) {
             return List.of();
         }
-        List<Produto> candidatos = produtoRepository.buscarPorNomeContendo(nome);
-        if (candidatos.isEmpty()) {
-            String tok = primeiroTokenSignificativo(nome);
-            if (tok != null) {
-                candidatos = produtoRepository.buscarPorNomeContendo(tok);
+        List<Produto> candidatos;
+        if (ufRef != null && !ufRef.isBlank()) {
+            candidatos = produtoRepository.buscarPorNomeContendoAndUf(nome, ufRef);
+            if (candidatos.isEmpty()) {
+                String tok = primeiroTokenSignificativo(nome);
+                if (tok != null) {
+                    candidatos = produtoRepository.buscarPorNomeContendoAndUf(tok, ufRef);
+                }
+            }
+        } else {
+            candidatos = produtoRepository.buscarPorNomeContendo(nome);
+            if (candidatos.isEmpty()) {
+                String tok = primeiroTokenSignificativo(nome);
+                if (tok != null) {
+                    candidatos = produtoRepository.buscarPorNomeContendo(tok);
+                }
             }
         }
         if (candidatos.isEmpty()) {
@@ -819,8 +796,9 @@ public class CorrecaoPlanilhaServiceImpl implements CorrecaoPlanilhaService {
                     Map<String, Object> m = new LinkedHashMap<>();
                     m.put("nome", p.getNome());
                     m.put("grupo", p.getGrupo());
-                    m.put("codigo_ncm", p.getCodigoNcmInformado());
-                    m.put("codigo_cest", p.getCodigoCestInformado());
+                    m.put("uf", p.getUf());
+                    m.put("codigo_ncm", p.getNcm() != null ? p.getNcm().getCodigo() : p.getCodigoNcmInformado());
+                    m.put("codigo_cest", p.getCest() != null ? p.getCest().getCodigo() : p.getCodigoCestInformado());
                     m.put("score_similaridade", pontuarSimilaridadeProduto(nome, p.getNome()));
                     return m;
                 })
@@ -906,38 +884,61 @@ public class CorrecaoPlanilhaServiceImpl implements CorrecaoPlanilhaService {
     }
 
     /**
-     * Busca na tabela produto por nome. Retorna o que tenha codigo_ncm e codigo_cest preenchidos.
-     * Prioriza: 1) score de similaridade do nome, 2) grupo coincidente, 3) nome mais longo.
+     * Busca na tabela produto por nome. Com {@code uf}, só considera produtos cujo NCM/CEST pertencem à UF.
+     * Aceita classificação via FK ({@code ncm}/{@code cest}) ou colunas legadas de código informado.
      */
-    private Optional<Produto> buscarProdutoComClassificacao(String nome, String grupo) {
-        if (nome == null || nome.isBlank()) return Optional.empty();
-        List<Produto> candidatos = produtoRepository.buscarPorNomeContendo(nome);
-        if (candidatos.isEmpty()) {
-            // Fallback: varre catálogo para lidar com nomes comerciais (ex.: "Nescau 200g")
-            candidatos = produtoRepository.findAll();
+    private Optional<Produto> buscarProdutoComClassificacao(String nome, String grupo, String ufRef) {
+        if (nome == null || nome.isBlank()) {
+            return Optional.empty();
+        }
+        List<Produto> candidatos;
+        if (ufRef != null && !ufRef.isBlank()) {
+            candidatos = produtoRepository.buscarPorNomeContendoAndUf(nome, ufRef);
+            if (candidatos.isEmpty()) {
+                String tok = primeiroTokenSignificativo(nome);
+                if (tok != null) {
+                    candidatos = produtoRepository.buscarPorNomeContendoAndUf(tok, ufRef);
+                }
+            }
+        } else {
+            candidatos = produtoRepository.buscarPorNomeContendo(nome);
+            if (candidatos.isEmpty()) {
+                candidatos = produtoRepository.findAll();
+            }
         }
 
         final String nomeEntrada = nome;
         final String grupoEntrada = grupo;
 
         return candidatos.stream()
-                .filter(p -> p.getCodigoNcmInformado() != null && !p.getCodigoNcmInformado().isBlank()
-                        && p.getCodigoCestInformado() != null && !p.getCodigoCestInformado().isBlank())
+                .filter(CorrecaoPlanilhaServiceImpl::produtoTemClassificacaoUtil)
                 .filter(p -> pontuarSimilaridadeProduto(nomeEntrada, p.getNome()) >= 2)
                 .min((a, b) -> {
                     int scoreA = pontuarSimilaridadeProduto(nomeEntrada, a.getNome());
                     int scoreB = pontuarSimilaridadeProduto(nomeEntrada, b.getNome());
-                    if (scoreA != scoreB) return Integer.compare(scoreB, scoreA);
+                    if (scoreA != scoreB) {
+                        return Integer.compare(scoreB, scoreA);
+                    }
 
                     if (grupoEntrada != null && !grupoEntrada.isBlank()) {
                         boolean aGrupo = grupoEntrada.equalsIgnoreCase(a.getGrupo());
                         boolean bGrupo = grupoEntrada.equalsIgnoreCase(b.getGrupo());
-                        if (aGrupo != bGrupo) return aGrupo ? -1 : 1;
+                        if (aGrupo != bGrupo) {
+                            return aGrupo ? -1 : 1;
+                        }
                     }
                     int lenA = a.getNome() != null ? a.getNome().length() : 0;
                     int lenB = b.getNome() != null ? b.getNome().length() : 0;
                     return Integer.compare(lenB, lenA);
                 });
+    }
+
+    private static boolean produtoTemClassificacaoUtil(Produto p) {
+        if (p.getNcm() != null) {
+            return true;
+        }
+        return p.getCodigoNcmInformado() != null && !p.getCodigoNcmInformado().isBlank()
+                && p.getCodigoCestInformado() != null && !p.getCodigoCestInformado().isBlank();
     }
 
     /**

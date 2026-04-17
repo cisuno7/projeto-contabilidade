@@ -5,7 +5,6 @@ import com.empresa.contabil.application.dto.ProcessarPlanilhaRequest;
 import com.empresa.contabil.application.dto.UploadPlanilhaRequest;
 import com.empresa.contabil.domain.model.Planilha;
 import com.empresa.contabil.domain.repository.PlanilhaRepository;
-import com.empresa.contabil.domain.service.InterpretadorPlanilhaService;
 import com.empresa.contabil.infrastructure.filestorage.FileStorageService;
 import com.empresa.contabil.interfaces.mapper.PlanilhaDTOMapper;
 import lombok.RequiredArgsConstructor;
@@ -14,8 +13,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -27,10 +24,9 @@ public class UploadPlanilhaUseCaseImpl implements UploadPlanilhaUseCase {
     private final PlanilhaRepository planilhaRepository;
     private final PlanilhaDTOMapper planilhaDTOMapper;
     private final ProcessarPlanilhaUseCase processarPlanilhaUseCase;
-    private final InterpretadorPlanilhaService interpretadorPlanilhaService;
     
     @Override
-    public PlanilhaDTO executar(UploadPlanilhaRequest request, MultipartFile arquivo, MultipartFile arquivoReferencia) {
+    public PlanilhaDTO executar(UploadPlanilhaRequest request, MultipartFile arquivo) {
         log.info("Iniciando upload de planilha para cliente: {}", request.getClienteId());
         
         try {
@@ -65,10 +61,7 @@ public class UploadPlanilhaUseCaseImpl implements UploadPlanilhaUseCase {
                             ProcessarPlanilhaRequest.builder()
                                     .planilhaId(planilhaSalva.getId())
                                     .usarIA(true)
-                                    .linhasReferencia(extrairLinhasReferencia(arquivoReferencia))
-                                    .nomeArquivoReferencia(
-                                            arquivoReferencia != null ? arquivoReferencia.getOriginalFilename() : null
-                                    )
+                                    .ufConferencia(request.getUfConferencia())
                                     .build()
                     );
                     return processada;
@@ -100,30 +93,4 @@ public class UploadPlanilhaUseCaseImpl implements UploadPlanilhaUseCase {
         return extensao.equals("CSV") ? "CSV" : "XLSX";
     }
 
-    @SuppressWarnings("unchecked")
-    private List<Map<String, String>> extrairLinhasReferencia(MultipartFile arquivoReferencia) {
-        if (arquivoReferencia == null || arquivoReferencia.isEmpty()) {
-            return null;
-        }
-        String tipoReferencia = determinarTipoArquivo(arquivoReferencia.getOriginalFilename());
-        try (var in = arquivoReferencia.getInputStream()) {
-            Planilha referencia = interpretadorPlanilhaService.lerPlanilha(
-                    in,
-                    arquivoReferencia.getOriginalFilename(),
-                    tipoReferencia
-            );
-            Map<String, Object> dados = interpretadorPlanilhaService.extrairDadosEstruturados(referencia);
-            List<Map<String, String>> linhas =
-                    (List<Map<String, String>>) dados.getOrDefault("linhas", List.of());
-            if (linhas.isEmpty()) {
-                log.warn("Planilha referência enviada sem linhas úteis");
-                return null;
-            }
-            log.info("Planilha referência carregada com {} linhas", linhas.size());
-            return linhas;
-        } catch (Exception e) {
-            log.warn("Falha ao ler planilha referência. Seguindo sem referência: {}", e.getMessage());
-            return null;
-        }
-    }
 }

@@ -34,18 +34,19 @@ public class PlanilhaController {
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<PlanilhaDTO> uploadPlanilha(
             @RequestParam("arquivo") MultipartFile arquivo,
-            @RequestParam(value = "arquivoReferencia", required = false) MultipartFile arquivoReferencia,
             @RequestParam("clienteId") UUID clienteId,
             @RequestParam(value = "nomeArquivo", required = false) String nomeArquivo,
-            @RequestParam(value = "corrigirComIA", required = false, defaultValue = "false") boolean corrigirComIA) {
+            @RequestParam(value = "corrigirComIA", required = false, defaultValue = "false") boolean corrigirComIA,
+            @RequestParam(value = "ufConferencia", required = false) String ufConferencia) {
         
         UploadPlanilhaRequest request = UploadPlanilhaRequest.builder()
                 .clienteId(clienteId)
                 .nomeArquivo(nomeArquivo != null ? nomeArquivo : arquivo.getOriginalFilename())
                 .corrigirComIA(corrigirComIA)
+                .ufConferencia(ufConferencia)
                 .build();
         
-        PlanilhaDTO planilha = uploadPlanilhaUseCase.executar(request, arquivo, arquivoReferencia);
+        PlanilhaDTO planilha = uploadPlanilhaUseCase.executar(request, arquivo);
         return ResponseEntity.status(HttpStatus.CREATED).body(planilha);
     }
     

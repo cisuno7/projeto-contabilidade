@@ -53,7 +53,7 @@ public class ProcessarPlanilhaUseCaseImpl implements ProcessarPlanilhaUseCase {
             
             // Se o request não informar explicitamente, assumimos que usar IA = true.
             // Não bloqueamos por disponibilidade da API externa, porque a correção
-            // também pode acontecer por regras locais + planilha de referência.
+            // também pode acontecer por regras locais e pelo cadastro no banco (UF).
             Boolean flagRequest = request.getUsarIA();
             boolean usarIA = (flagRequest == null || Boolean.TRUE.equals(flagRequest));
             log.info("Processando planilha {} com IA? {}", planilha.getId(), usarIA);
@@ -77,13 +77,12 @@ public class ProcessarPlanilhaUseCaseImpl implements ProcessarPlanilhaUseCase {
             // Validação básica da estrutura
             interpretadorPlanilhaService.validarEstrutura(planilha);
             
-            // Correção de NCM/CEST (focado em SP + Simples Nacional)
+            // Correção de NCM/CEST (banco Supabase filtrado por UF quando informada)
             if (usarIA) {
                 log.info("Aplicando correções automáticas de NCM/CEST (pipeline IA/regra) para planilha {}", planilha.getId());
                 planilha = correcaoPlanilhaService.corrigirNcmECest(
                         planilha,
-                        request.getLinhasReferencia(),
-                        request.getNomeArquivoReferencia()
+                        request.getUfConferencia()
                 );
             } else {
                 log.info("Processando sem IA (apenas validação de estrutura) para planilha {}", planilha.getId());

@@ -5,6 +5,10 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 import jakarta.persistence.*;
+
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
 import lombok.Getter;
 
 @Getter
@@ -17,6 +21,10 @@ public class Produto {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @Column(name = "uf", nullable = true, length = 2)
+    @JdbcTypeCode(SqlTypes.CHAR)
+    private String uf;
+
     // ======================
     // Dados brutos da planilha
     // ======================
@@ -25,12 +33,6 @@ public class Produto {
     private String nome;
 
     private String grupo;
-
-    @Column(name = "codigo_ncm")
-    private String codigoNcmInformado;
-
-    @Column(name = "codigo_cest")
-    private String codigoCestInformado;
 
     @Column(length = 4)
     private String csosn;
@@ -79,5 +81,15 @@ public void definirDataProcessamento(LocalDateTime data) {
     this.dataProcessamento = data;
 }
 
+    /**
+     * Compatibilidade: no banco só existem {@code ncm_id} / {@code cest_id}; o “informado” vem do vínculo quando carregado.
+     */
+    public String getCodigoNcmInformado() {
+        return ncm != null ? ncm.getCodigo() : null;
+    }
+
+    public String getCodigoCestInformado() {
+        return cest != null ? cest.getCodigo() : null;
+    }
 
 }

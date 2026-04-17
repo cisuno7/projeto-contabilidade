@@ -5,5 +5,5 @@ import com.empresa.contabil.application.dto.UploadPlanilhaRequest;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface UploadPlanilhaUseCase {
-    PlanilhaDTO executar(UploadPlanilhaRequest request, MultipartFile arquivo, MultipartFile arquivoReferencia);
+    PlanilhaDTO executar(UploadPlanilhaRequest request, MultipartFile arquivo);
 }
