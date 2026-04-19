@@ -13,7 +13,9 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
+import java.text.Normalizer;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 /**
  * Armazena arquivos no Supabase Storage (bucket).
@@ -23,6 +25,9 @@ import java.util.UUID;
 @org.springframework.stereotype.Service
 @Slf4j
 public class FileStorageServiceSupabaseImpl implements FileStorageService {
+
+    private static final Pattern NAO_SEGURO_STORAGE = Pattern.compile("[^a-zA-Z0-9._-]");
+    private static final Pattern MULTIPLOS_UNDERSCORE = Pattern.compile("_{2,}");
 
     private final WebClient webClient;
     private final String bucket;
@@ -50,7 +55,7 @@ public class FileStorageServiceSupabaseImpl implements FileStorageService {
             if (nomeFinal == null || nomeFinal.isEmpty()) {
                 nomeFinal = UUID.randomUUID().toString();
             }
-            String key = UUID.randomUUID() + "_" + nomeFinal;
+            String key = UUID.randomUUID() + "_" + sanitizarNomeParaStorage(nomeFinal);
             byte[] bytes = arquivo.getBytes();
             upload(key, bytes, arquivo.getContentType());
             log.info("Arquivo enviado ao Supabase Storage: {}", key);
@@ -72,7 +77,7 @@ public class FileStorageServiceSupabaseImpl implements FileStorageService {
         if (!nomeFinal.toLowerCase().endsWith(".xlsx") && !nomeFinal.toLowerCase().endsWith(".xls")) {
             nomeFinal = nomeFinal + ".xlsx";
         }
-        String key = UUID.randomUUID() + "_" + nomeFinal;
+        String key = UUID.randomUUID() + "_" + sanitizarNomeParaStorage(nomeFinal);
         upload(key, bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         log.info("Arquivo (bytes) enviado ao Supabase Storage: {}", key);
         return key;
@@ -139,5 +144,34 @@ public class FileStorageServiceSupabaseImpl implements FileStorageService {
                 .retrieve()
                 .toBodilessEntity()
                 .block();
+    }
+
+    /**
+     * O Storage do Supabase (S3-like) rejeita vários caracteres no path do objeto (400).
+     * Ex.: circunflexo, colchetes, chaves, pipe, asterisco, interrogação, aspas, dois-pontos, barra invertida.
+     */
+    static String sanitizarNomeParaStorage(String nomeOriginal) {
+        if (nomeOriginal == null || nomeOriginal.isBlank()) {
+            return "arquivo.bin";
+        }
+        String n = Normalizer.normalize(nomeOriginal.trim(), Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "");
+        int lastDot = n.lastIndexOf('.');
+        String base = lastDot > 0 ? n.substring(0, lastDot) : n;
+        String ext = lastDot > 0 ? n.substring(lastDot) : "";
+        String safe = NAO_SEGURO_STORAGE.matcher(base).replaceAll("_");
+        safe = MULTIPLOS_UNDERSCORE.matcher(safe).replaceAll("_");
+        safe = safe.replaceAll("^_+|_+$", "");
+        if (safe.isEmpty()) {
+            safe = "arquivo";
+        }
+        if (safe.length() > 150) {
+            safe = safe.substring(0, 150);
+        }
+        String extNorm = ext.isEmpty() ? "" : ext.toLowerCase();
+        if (extNorm.length() > 10) {
+            extNorm = extNorm.substring(0, 10);
+        }
+        return safe + extNorm;
     }
 }
